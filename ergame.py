@@ -322,9 +322,8 @@ class EwRect(EwShape):
 
 class EwAbstractButton(EwFont):
 	
-	def __init__(self, ewfont, action):
+	def __init__(self, action):
 		
-		self.ewfont = ewfont
 		self.action = action
 	
 	def __call__(self):
@@ -332,14 +331,14 @@ class EwAbstractButton(EwFont):
 		
 class EwButton(EwAbstractButton, EwImage):
 	
-	def __init__(self, x, y, w, h, filename, ewfont, action):
+	def __init__(self, x, y, w, h, filename, action):
 		
-		EwAbstractButton.__init__(self, ewfont, action)
+		EwAbstractButton.__init__(self, action)
 		EwImage.__init__(self, x, y, w, h, filename)
 		
 class EwRawButton(EwAbstractButton, EwShape):
 	
-	def __init__(self, x, y, w, h, color, thickness, ewfont, action):
+	def __init__(self, x, y, w, h, color, thickness, action):
 		
 		EwAbstractButton.__init__(self, ewfont, action)
 		EwShape.__init__(self, x, y, w, h, color, thickness)
