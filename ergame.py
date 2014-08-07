@@ -1,11 +1,12 @@
 import pygame
 import os
+from itertools import product
 
 PATH = "EWG"
 
 # ======================================================== #
 
-class EwRunnable():
+class EwRunnable:
 	
 	def __init__(self, initial_state):
 		
@@ -29,13 +30,13 @@ class EwApp(EwRunnable):
 
 # ======================================================== #
 
-class EwScene():
+class EwScene:
 	
 	def __init__(self, scene):
 		
 		self.scene = scene
 		
-class EwPlot():
+class EwPlot:
 	
 	def __init__(self, *scenes):
 		
@@ -63,7 +64,7 @@ def get_standard_plot():
 		
 # ======================================================== #
 
-class EwData():
+class EwData:
 	
 	def __init__(self):
 		
@@ -78,12 +79,30 @@ class EwData():
 	def get_data(self):
 		return self.data
 		
-class EwPos():
+class EwPos:
 	
 	def __init__(self, x, y):
 		
 		self.x = x
 		self.y = y
+		
+	def __getitem__(self, key):
+		
+		if key == "x":
+			return self.x
+		elif key == "y":
+			return self.y
+		elif key == "(xy)":
+			return (self.x, self.y)
+		elif key == "[xy]":
+			return [self.x, self.y]
+		
+	def __setitem__(self, key, value):
+		
+		if key == "x":
+			self.x = value
+		elif key == "y":
+			self.y = value
 		
 	def get_x(self):
 		return self.x
@@ -136,7 +155,7 @@ class EwMovable(EwPos):
 	def set_step(self, value):
 		self.step = value
 			
-class EwResizable():
+class EwResizable:
 	
 	def __init__(self, w, h):
 		
@@ -154,6 +173,84 @@ class EwResizable():
 		
 	def set_h(self, value):
 		self.h = value
+		
+class EwPositioningSystem(EwResizable):
+	
+	def __init__(self, option, sharpness=1):
+		
+		CONST_SHARPNESS = 16
+		
+		if option == 0:
+			w = 640
+			h = 480
+		elif option == 1:
+			w = 800
+			h = 600
+		elif option == 2:
+			w = 1024
+			h = 768
+		elif option == 3:
+			w = 1280
+			h = 1024
+		elif option == 4:
+			w = 1680
+			h = 1050
+		
+		if sharpness != 0:
+			sh = CONST_SHARPNESS*sharpness
+		else:
+			sh = CONST_SHARPNESS*1
+	
+		EwResizable.__init__(self, w, h)
+		
+		self.key_positions = [[x for x in range(sh)], [y for y in range(sh)]]
+		self.x = dict(zip([x for x in self.key_positions[0]], [x for x in range(0, w, w/sh)]))
+		self.y = dict(zip([y for y in self.key_positions[1]], [y for y in range(0, h, h/sh)]))
+		self.coords = list(product(self.y.keys(), self.x.keys()))
+		
+# ======================================================== #
+
+class EwCol:
+	
+	def __init__(self, o, oo):
+		
+		self.o = o
+		self.oo = oo
+		self.ox = self.o.x
+		self.oy = self.o.y
+		self.ow = self.o.w
+		self.oh = self.o.h
+		self.oox = self.oo.x
+		self.ooy = self.oo.y
+		self.oow = self.oo.w
+		self.ooh = self.oo.h
+		
+	def __call__(self):
+		
+		if ((((self.ox + self.ow) > self.oox) and (self.ox < (self.oox + self.oow))) and (((self.oy + self.oh) > self.ooy) and (self.oy < (self.ooy + self.ooh)))):
+			return True
+		else:
+			return False
+			
+class EwMouseCol:
+	
+	def __init__(self, o, oo):
+		
+		self.o = o
+		self.oo = oo
+		self.ox = self.o[0]
+		self.oy = self.o[1]
+		self.oox = self.oo.x
+		self.ooy = self.oo.y
+		self.oow = self.oo.w
+		self.ooh = self.oo.h
+		
+	def __call__(self):
+		
+		if (((self.ox > self.oox) and (self.ox < (self.oox + self.oow))) and ((self.oy > self.ooy) and (self.oy < (self.ooy + self.ooh)))):
+			return True
+		else:
+			return False
 			
 # ======================================================== #
 
@@ -320,25 +417,52 @@ class EwRect(EwShape):
 
 # ======================================================== #
 
-class EwAbstractButton(EwFont):
+class EwAbstractButton:
 	
-	def __init__(self, action):
+	def __init__(self):
 		
-		self.action = action
+		self.font_size = 32
+		self.font = pygame.font.Font(None, self.font_size)
 	
-	def __call__(self):
-		apply(action)
+	def hover(self, mouse_pos):
+		if EwMouseCol(mouse_pos, self)():
+			return True
+		if not EwMouseCol(mouse_pos, self)():
+			return False
+				
+	def press(self, mouse_pos, mouse_button, key=None):
+		if EwMouseCol(mouse_pos, self)() and pygame.mouse.get_pressed()[mouse_button]:
+			return True
+		if not EwMouseCol(mouse_pos, self)() and pygame.mouse.get_pressed()[mouse_button]:
+			return False
+		if key is not None:
+			if pygame.key.get_pressed()[key]:
+				return True
+			if not pygame.key.get_pressed()[key]:
+				return False
+		
+	def get_font_size(self):
+		return self.font_size
+		
+	def set_font_size(self, value):
+		self.font_size = value
+		
+	def get_font(self):
+		return self.font
+		
+	def set_font(self, new_font):
+		self.font = new_font
 		
 class EwButton(EwAbstractButton, EwImage):
 	
-	def __init__(self, x, y, w, h, filename, action):
+	def __init__(self, x, y, w, h, filename):
 		
-		EwAbstractButton.__init__(self, action)
+		EwAbstractButton.__init__(self)
 		EwImage.__init__(self, x, y, w, h, filename)
 		
-class EwRawButton(EwAbstractButton, EwShape):
+class EwRawButton(EwAbstractButton, EwRect):
 	
-	def __init__(self, x, y, w, h, color, thickness, action):
+	def __init__(self, x, y, w, h, color=(255,255,255), thickness=1):
 		
-		EwAbstractButton.__init__(self, ewfont, action)
-		EwShape.__init__(self, x, y, w, h, color, thickness)
+		EwAbstractButton.__init__(self)
+		EwRect.__init__(self, x, y, w, h, color, thickness)
