@@ -1,12 +1,14 @@
-from erange import R
 import pygame
 import pygame.mouse as pymo
 import ergame as er
+from random import randrange
+from random import uniform
 
 if __name__ == "__main__":
 
 	SCREEN_WIDTH = 1024
 	SCREEN_HEIGHT = 768
+	DISTANCE_LIMIT = 2048
 
 	app = er.EwApp("Espace", SCREEN_WIDTH, SCREEN_HEIGHT)
 	
@@ -18,7 +20,7 @@ if __name__ == "__main__":
 	PLAYER_BOOST = 1.8
 	
 	player = er.EwRect(((SCREEN_WIDTH/2)-(PLAYER_SIZE/2)), 768-PLAYER_SIZE*2, PLAYER_SIZE, PLAYER_SIZE, PLAYER_COLOR, 1)
-	
+
 	class Bullet(er.EwRect):
 		
 		def __init__(self, x, y):
@@ -27,12 +29,32 @@ if __name__ == "__main__":
 			self.shot = False
 
 	ammo = []
+	
+	class Enemy(er.EwRect):
+		
+		SIZES = [x for x in range(0, 2*(16*16), 16)]
+		
+		def __init__(self):
+
+			self.health = 0
+			self.speed = uniform(0.3, 0.8)
+			w = Enemy.SIZES[randrange(16, len(Enemy.SIZES)-1)]
+			h = Enemy.SIZES[randrange(16, len(Enemy.SIZES)-1)]
+			c = (randrange(125, 255), randrange(125, 255), randrange(125, 255))
+			er.EwRect.__init__(self, randrange(8, SCREEN_WIDTH-w), -randrange(h, DISTANCE_LIMIT), w, h, c)
+			
+		def translate(self):
+			self.y += self.speed
+			
+	en = [Enemy() for x in range(1, 128)]
 
 	def update():
 		
 		pygame.display.flip()
 		bg.draw(app.screen)
 		player.draw(app.screen)
+		[x.draw(app.screen) for x in en]
+		[x.translate() for x in en]
 		
 		if not pygame.key.get_pressed()[pygame.K_LSHIFT]:
 			player.move(pygame.key.get_pressed()[pygame.K_UP], 0, PLAYER_SPEED)
@@ -64,6 +86,7 @@ if __name__ == "__main__":
 			for bullet in ammo:
 				bullet.y -= 2
 				bullet.draw(app.screen)
+			#	if er.EwCol(bullet, test_wall)():
 
 		if pygame.key.get_pressed()[pygame.K_ESCAPE]:
 			app.state = True
