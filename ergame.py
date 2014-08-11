@@ -1,4 +1,5 @@
 import pygame
+import pygame.mouse as pymo
 import os
 from itertools import product
 
@@ -207,6 +208,7 @@ class EwPositioningSystem(EwResizable):
 		self.x = dict(zip([x for x in self.key_positions[0]], [x for x in range(0, w, w/sh)]))
 		self.y = dict(zip([y for y in self.key_positions[1]], [y for y in range(0, h, h/sh)]))
 		self.coords = list(product(self.y.keys(), self.x.keys()))
+		self.sh = sh
 		
 # ======================================================== #
 
@@ -358,7 +360,10 @@ class EwFont(EwObject):
 		self.filename = filename
 		self.text = text
 		self.color = color
-		self.font = pygame.font.Font(os.path.join(PATH, filename), self.w+self.h)
+		if self.filename is not None:
+			self.font = pygame.font.Font(os.path.join(PATH, filename), self.w+self.h)
+		else:
+			self.font = pygame.font.Font(None, self.w+self.h)
 		self.image = self.font.render(self.text, 1, self.color)
 		self.transform()
 		
@@ -379,6 +384,13 @@ class EwFont(EwObject):
 		
 	def set_color(self, value):
 		self.color = value
+		
+def draw_mouse_coordinates(destination_surface, w=None, h=None, color=(255,0,0)):
+	if w is None or h is None:
+		w = 64
+		h = 16
+	pos = EwFont(pymo.get_pos()[0]+16, pymo.get_pos()[1], w, h, None, str((pymo.get_pos()[0], pymo.get_pos()[1])), color)
+	pos.draw(destination_surface)
 
 # ======================================================== #
 
