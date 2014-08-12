@@ -9,17 +9,34 @@ PATH = "EWG"
 
 class EwRunnable:
 	
+	"""
+	An EwRunnable object runs the application's main-loop.
+	"""
+	
 	def __init__(self, initial_state):
 		
 		self.state = initial_state
+		self.time_elapsed = 0
+		self.clock = pygame.time.Clock()
 		
 	def run(self, f, *args):
 		while self.state is not True:
+			dt = self.clock.tick()
+			self.time_elapsed += dt
 			apply(f, args)
 		
 class EwApp(EwRunnable):
 	
+	"""
+	EwApp defines the very application in itself.
+	It initializes an EwRunnable object and runs the application.
+	"""
+	
 	def __init__(self, title, w, h, state=False):
+		
+		"""
+		An EwApp requires three arguments: A Title for the App's window, its Width and its Height.
+		"""
 		
 		pygame.init()
 		pygame.font.init()
@@ -28,6 +45,29 @@ class EwApp(EwRunnable):
 		
 		self.screen = pygame.display.set_mode((w, h))
 		pygame.display.set_caption(title)
+
+	# These three methods return True if a specific amount of time has elapsed.
+	# It's useful to use in "cooldown" and "raid" features, and anything that depends on time.
+	def check_if_time_has_elapsed_in_milliseconds(self, milliseconds):
+		if self.time_elapsed > milliseconds:
+			self.time_elapsed = 0
+			return True
+		else:
+			return False
+			
+	def check_if_time_has_elapsed_in_seconds(self, seconds):
+		if self.time_elapsed > seconds*1000:
+			self.time_elapsed = 0
+			return True
+		else:
+			return False
+			
+	def check_if_time_has_elapsed_in_minutes(self, minutes):
+		if self.time_elapsed > minutes*60000:
+			self.time_elapsed = 0
+			return True
+		else:
+			return False
 
 # ======================================================== #
 
@@ -39,7 +79,15 @@ class EwScene:
 		
 class EwPlot:
 	
+	"""
+	An EwPlot object is used in order to store scenes (Screens).
+	"""
+	
 	def __init__(self, *scenes):
+		
+		"""
+		An EwPlot requires a list of scenes (Strings).
+		"""
 		
 		self.data = list(scenes)
 		if len(self.data) > 0:
@@ -53,9 +101,13 @@ class EwPlot:
 		
 def get_standard_plot():
 	
-	scene = [EwScene("S"+str(x)) for x in range(99)]
-	opt = [EwScene("OPT"+str(x)) for x in range(99)]
-	inv = [EwScene("INV"+str(x)) for x in range(99)]
+	"""
+	This function returns a default plot with 999 Screens, 999 Option Screens, 999 Inventory Screens and a Main Menu screen.
+	"""
+	
+	scene = [EwScene("S"+str(x)) for x in range(999)]
+	opt = [EwScene("OPT"+str(x)) for x in range(999)]
+	inv = [EwScene("INV"+str(x)) for x in range(999)]
 	l = []
 	l.append(EwScene("MAIN"))
 	l.extend(scene)
@@ -353,7 +405,7 @@ class EwScrollingImage(EwImage):
 
 class EwFont(EwObject):
 	
-	def __init__(self, x, y, w, h, filename, text, color):
+	def __init__(self, x, y, w, h, filename, text, color, bold=False):
 		
 		EwObject.__init__(self, x, y, w, h)
 		
@@ -361,9 +413,11 @@ class EwFont(EwObject):
 		self.text = text
 		self.color = color
 		if self.filename is not None:
-			self.font = pygame.font.Font(os.path.join(PATH, filename), self.w+self.h)
+			self.font = pygame.font.Font(os.path.join(PATH, filename), self.w+self.h*2)
 		else:
 			self.font = pygame.font.Font(None, self.w+self.h)
+		if bold:
+			self.font.set_bold(True)
 		self.image = self.font.render(self.text, 1, self.color)
 		self.transform()
 		

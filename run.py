@@ -9,6 +9,7 @@ if __name__ == "__main__":
 	SCREEN_WIDTH = 1024
 	SCREEN_HEIGHT = 768
 	DISTANCE_LIMIT = 2048
+	clock = pygame.time.Clock()
 
 	app = er.EwApp("Espace", SCREEN_WIDTH, SCREEN_HEIGHT)
 	
@@ -48,13 +49,18 @@ if __name__ == "__main__":
 			
 	en = [Enemy() for x in range(1, 128)]
 
+	ammo_state = er.EwFont(16, 16, 128+16, 16, "Squares Bold Free.otf", "Ammo State: Normal", (255, 255, 255))
+
 	def update():
 		
 		pygame.display.flip()
 		bg.draw(app.screen)
+		ammo_state.draw(app.screen)
 		player.draw(app.screen)
-		[x.draw(app.screen) for x in en]
+		# [x.draw(app.screen) for x in en]
 		[x.translate() for x in en]
+		
+		print clock.tick()
 		
 		if not pygame.key.get_pressed()[pygame.K_LSHIFT]:
 			player.move(pygame.key.get_pressed()[pygame.K_UP], 0, PLAYER_SPEED)
@@ -75,13 +81,16 @@ if __name__ == "__main__":
 			player.move(pygame.key.get_pressed()[pygame.K_RIGHT], 3, PLAYER_BOOST)
 			player.move(pygame.key.get_pressed()[pygame.K_d], 3, PLAYER_BOOST)
 			
-		if pygame.key.get_pressed()[pygame.K_SPACE]:
+		# if pygame.key.get_pressed()[pygame.K_SPACE]:
+		if app.check_if_time_has_passed_in_seconds(2):
 			if len(ammo) < 16*16:
 				ammo.append(Bullet(player.x+((PLAYER_SIZE/2)/2), player.y-PLAYER_SIZE))
 			else:
 				for bullet in ammo:
 					if bullet.y < -bullet.h*3:
 						ammo.pop(ammo.index(bullet))
+			pygame.time.delay(10)	
+				
 		if len(ammo) > 0:
 			for bullet in ammo:
 				bullet.y -= 2
