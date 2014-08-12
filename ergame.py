@@ -8,11 +8,7 @@ PATH = "EWG"
 # ======================================================== #
 
 class EwRunnable:
-	
-	"""
-	An EwRunnable object runs the application's main-loop.
-	"""
-	
+
 	def __init__(self, initial_state):
 		
 		self.state = initial_state
@@ -26,18 +22,9 @@ class EwRunnable:
 			apply(f, args)
 		
 class EwApp(EwRunnable):
-	
-	"""
-	EwApp defines the very application in itself.
-	It initializes an EwRunnable object and runs the application.
-	"""
-	
+
 	def __init__(self, title, w, h, state=False):
-		
-		"""
-		An EwApp requires three arguments: A Title for the App's window, its Width and its Height.
-		"""
-		
+
 		pygame.init()
 		pygame.font.init()
 		
@@ -46,8 +33,6 @@ class EwApp(EwRunnable):
 		self.screen = pygame.display.set_mode((w, h))
 		pygame.display.set_caption(title)
 
-	# These three methods return True if a specific amount of time has elapsed.
-	# It's useful to use in "cooldown" and "raid" features, and anything that depends on time.
 	def check_if_time_has_elapsed_in_milliseconds(self, milliseconds):
 		if self.time_elapsed > milliseconds:
 			self.time_elapsed = 0
@@ -79,32 +64,32 @@ class EwScene:
 		
 class EwPlot:
 	
-	"""
-	An EwPlot object is used in order to store scenes (Screens).
-	"""
-	
-	def __init__(self, *scenes):
+	def __init__(self, scenes):
 		
-		"""
-		An EwPlot requires a list of scenes (Strings).
-		"""
-		
-		self.data = list(scenes)
+		self.data = scenes
 		if len(self.data) > 0:
 			self.current = self.data[0]
 		
 	def get_scene(self):
-		return self.current
-		
+		return self.current.scene
+	
 	def change_scene(self, new_scene):
 		self.current = new_scene
 		
+	def next(self):
+		if self.data.index(self.current) != len(self.data)-1:
+			self.change_scene(self.data[self.data.index(self.current)+1])
+		else:
+			self.change_scene(self.data[0])
+			
+	def previous(self):
+		if self.data.index(self.current) != 0:
+			self.change_scene(self.data[self.data.index(self.current)-1])
+		else:
+			self.change_scene(self.data[len(self.data)-1])
+		
 def get_standard_plot():
-	
-	"""
-	This function returns a default plot with 999 Screens, 999 Option Screens, 999 Inventory Screens and a Main Menu screen.
-	"""
-	
+
 	scene = [EwScene("S"+str(x)) for x in range(999)]
 	opt = [EwScene("OPT"+str(x)) for x in range(999)]
 	inv = [EwScene("INV"+str(x)) for x in range(999)]

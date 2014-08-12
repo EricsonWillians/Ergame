@@ -9,7 +9,6 @@ if __name__ == "__main__":
 	SCREEN_WIDTH = 1024
 	SCREEN_HEIGHT = 768
 	DISTANCE_LIMIT = 2048
-	clock = pygame.time.Clock()
 
 	app = er.EwApp("Espace", SCREEN_WIDTH, SCREEN_HEIGHT)
 	
