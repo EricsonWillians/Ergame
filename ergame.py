@@ -5,6 +5,7 @@ from itertools import product
 
 PATH = "EWG"
 
+# EXECUTION
 # ======================================================== #
 
 class EwRunnable:
@@ -54,52 +55,7 @@ class EwApp(EwRunnable):
 		else:
 			return False
 
-# ======================================================== #
-
-class EwScene:
-	
-	def __init__(self, scene):
-		
-		self.scene = scene
-		
-class EwPlot:
-	
-	def __init__(self, scenes):
-		
-		self.data = scenes
-		if len(self.data) > 0:
-			self.current = self.data[0]
-		
-	def get_scene(self):
-		return self.current.scene
-	
-	def change_scene(self, new_scene):
-		self.current = new_scene
-		
-	def next(self):
-		if self.data.index(self.current) != len(self.data)-1:
-			self.change_scene(self.data[self.data.index(self.current)+1])
-		else:
-			self.change_scene(self.data[0])
-			
-	def previous(self):
-		if self.data.index(self.current) != 0:
-			self.change_scene(self.data[self.data.index(self.current)-1])
-		else:
-			self.change_scene(self.data[len(self.data)-1])
-		
-def get_standard_plot():
-
-	scene = [EwScene("S"+str(x)) for x in range(999)]
-	opt = [EwScene("OPT"+str(x)) for x in range(999)]
-	inv = [EwScene("INV"+str(x)) for x in range(999)]
-	l = []
-	l.append(EwScene("MAIN"))
-	l.extend(scene)
-	l.extend(opt)
-	l.extend(inv)
-	return EwPlot(l)
-		
+# DATA MANIPULATION
 # ======================================================== #
 
 class EwData:
@@ -247,50 +203,7 @@ class EwPositioningSystem(EwResizable):
 		self.coords = list(product(self.y.keys(), self.x.keys()))
 		self.sh = sh
 		
-# ======================================================== #
-
-class EwCol:
-	
-	def __init__(self, o, oo):
-		
-		self.o = o
-		self.oo = oo
-		self.ox = self.o.x
-		self.oy = self.o.y
-		self.ow = self.o.w
-		self.oh = self.o.h
-		self.oox = self.oo.x
-		self.ooy = self.oo.y
-		self.oow = self.oo.w
-		self.ooh = self.oo.h
-		
-	def __call__(self):
-		
-		if ((((self.ox + self.ow) > self.oox) and (self.ox < (self.oox + self.oow))) and (((self.oy + self.oh) > self.ooy) and (self.oy < (self.ooy + self.ooh)))):
-			return True
-		else:
-			return False
-			
-class EwMouseCol:
-	
-	def __init__(self, o, oo):
-		
-		self.o = o
-		self.oo = oo
-		self.ox = self.o[0]
-		self.oy = self.o[1]
-		self.oox = self.oo.x
-		self.ooy = self.oo.y
-		self.oow = self.oo.w
-		self.ooh = self.oo.h
-		
-	def __call__(self):
-		
-		if (((self.ox > self.oox) and (self.ox < (self.oox + self.oow))) and ((self.oy > self.ooy) and (self.oy < (self.ooy + self.ooh)))):
-			return True
-		else:
-			return False
-			
+# Object Manipulation
 # ======================================================== #
 
 class EwObject(EwData, EwMovable, EwResizable):
@@ -303,8 +216,6 @@ class EwObject(EwData, EwMovable, EwResizable):
 		
 	def get(self):
 		return (self.x, self.y, self.w, self.h)
-		
-# ======================================================== #
 		
 class EwImage(EwObject):
 	
@@ -386,8 +297,6 @@ class EwScrollingImage(EwImage):
 	def reset_scroll_speed(self):
 		self.scroll_speed = self.default_scroll_speed
 			
-# ======================================================== #
-
 class EwFont(EwObject):
 	
 	def __init__(self, x, y, w, h, filename, text, color, bold=False):
@@ -431,8 +340,6 @@ def draw_mouse_coordinates(destination_surface, w=None, h=None, color=(255,0,0))
 	pos = EwFont(pymo.get_pos()[0]+16, pymo.get_pos()[1], w, h, None, str((pymo.get_pos()[0], pymo.get_pos()[1])), color)
 	pos.draw(destination_surface)
 
-# ======================================================== #
-
 class EwShape(EwObject):
 	
 	def __init__(self, x, y, w, h, color, thickness):
@@ -466,6 +373,99 @@ class EwRect(EwShape):
 	def draw_ellipse(self, destination_surface):
 		pygame.draw.ellipse(destination_surface, self.color, (self.x, self.y, self.w, self.h), self.thickness)
 
+# Collision Detection
+# ======================================================== #
+
+class EwCol:
+	
+	def __init__(self, o, oo):
+		
+		self.o = o
+		self.oo = oo
+		self.ox = self.o.x
+		self.oy = self.o.y
+		self.ow = self.o.w
+		self.oh = self.o.h
+		self.oox = self.oo.x
+		self.ooy = self.oo.y
+		self.oow = self.oo.w
+		self.ooh = self.oo.h
+		
+	def __call__(self):
+		
+		if ((((self.ox + self.ow) > self.oox) and (self.ox < (self.oox + self.oow))) and (((self.oy + self.oh) > self.ooy) and (self.oy < (self.ooy + self.ooh)))):
+			return True
+		else:
+			return False
+			
+class EwMouseCol:
+	
+	def __init__(self, o, oo):
+		
+		self.o = o
+		self.oo = oo
+		self.ox = self.o[0]
+		self.oy = self.o[1]
+		self.oox = self.oo.x
+		self.ooy = self.oo.y
+		self.oow = self.oo.w
+		self.ooh = self.oo.h
+		
+	def __call__(self):
+		
+		if (((self.ox > self.oox) and (self.ox < (self.oox + self.oow))) and ((self.oy > self.ooy) and (self.oy < (self.ooy + self.ooh)))):
+			return True
+		else:
+			return False
+
+# Screen Management
+# ======================================================== #
+
+class EwScene:
+	
+	def __init__(self, scene):
+		
+		self.scene = scene
+		
+class EwPlot:
+	
+	def __init__(self, scenes):
+		
+		self.data = scenes
+		if len(self.data) > 0:
+			self.current = self.data[0]
+		
+	def get_scene(self):
+		return self.current.scene
+	
+	def change_scene(self, new_scene):
+		self.current = new_scene
+		
+	def next(self):
+		if self.data.index(self.current) != len(self.data)-1:
+			self.change_scene(self.data[self.data.index(self.current)+1])
+		else:
+			self.change_scene(self.data[0])
+			
+	def previous(self):
+		if self.data.index(self.current) != 0:
+			self.change_scene(self.data[self.data.index(self.current)-1])
+		else:
+			self.change_scene(self.data[len(self.data)-1])
+		
+def get_standard_plot():
+
+	scene = [EwScene("S"+str(x)) for x in range(999)]
+	opt = [EwScene("OPT"+str(x)) for x in range(999)]
+	inv = [EwScene("INV"+str(x)) for x in range(999)]
+	l = []
+	l.append(EwScene("MAIN"))
+	l.extend(scene)
+	l.extend(opt)
+	l.extend(inv)
+	return EwPlot(l)
+
+# GUI
 # ======================================================== #
 
 class EwAbstractButton:

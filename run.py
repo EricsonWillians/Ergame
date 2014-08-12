@@ -58,9 +58,7 @@ if __name__ == "__main__":
 		player.draw(app.screen)
 		# [x.draw(app.screen) for x in en]
 		[x.translate() for x in en]
-		
-		print clock.tick()
-		
+
 		if not pygame.key.get_pressed()[pygame.K_LSHIFT]:
 			player.move(pygame.key.get_pressed()[pygame.K_UP], 0, PLAYER_SPEED)
 			player.move(pygame.key.get_pressed()[pygame.K_w], 0, PLAYER_SPEED)
@@ -81,7 +79,7 @@ if __name__ == "__main__":
 			player.move(pygame.key.get_pressed()[pygame.K_d], 3, PLAYER_BOOST)
 			
 		# if pygame.key.get_pressed()[pygame.K_SPACE]:
-		if app.check_if_time_has_passed_in_seconds(2):
+		if app.check_if_time_has_elapsed_in_seconds(2):
 			if len(ammo) < 16*16:
 				ammo.append(Bullet(player.x+((PLAYER_SIZE/2)/2), player.y-PLAYER_SIZE))
 			else:
