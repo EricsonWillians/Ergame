@@ -5,43 +5,31 @@ if __name__ == "__main__":
 
 	SCREEN_WIDTH = 1024
 	SCREEN_HEIGHT = 768
+	
+	PLAYER_SIZE = 32
+	PLAYER_COLOR = (255, 255, 255)
+	PLAYER_SPEED = 1
+	PLAYER_BOOST = 1.8
+	
+	player = er.EwRect(((SCREEN_WIDTH/2)-(PLAYER_SIZE/2)), 768-PLAYER_SIZE*2, PLAYER_SIZE, PLAYER_SIZE, PLAYER_COLOR, 0)
 
 	app = er.EwApp("Test App", SCREEN_WIDTH, SCREEN_HEIGHT)
-	scenes = [er.EwScene("Scene " + str(x)) for x in range(10)]
-	plot = er.EwPlot(scenes)
-	print plot.current
-	
+	pos = er.EwPos(100, 200)
+
 	def update():
 		
 		pygame.display.flip()
 		app.screen.fill((0, 0, 0))
 		
-		if app.check_if_time_has_elapsed_in_milliseconds(150):
-			if pygame.key.get_pressed()[pygame.K_RIGHT]:
-				plot.next()
-			if pygame.key.get_pressed()[pygame.K_LEFT]:
-				plot.previous()
-		
-		if plot.get_scene() == "Scene 0":
-			er.EwFont(100, 100, 300, 100, None, "Scene 0", (255, 255, 255)).draw(app.screen)
-		if plot.get_scene() == "Scene 1":
-			er.EwFont(100, 100, 300, 100, None, "Scene 1", (255, 255, 255)).draw(app.screen)
-		if plot.get_scene() == "Scene 2":
-			er.EwFont(100, 100, 300, 100, None, "Scene 2", (255, 255, 255)).draw(app.screen)
-		if plot.get_scene() == "Scene 3":
-			er.EwFont(100, 100, 300, 100, None, "Scene 3", (255, 255, 255)).draw(app.screen)
-		if plot.get_scene() == "Scene 4":
-			er.EwFont(100, 100, 300, 100, None, "Scene 4", (255, 255, 255)).draw(app.screen)
-		if plot.get_scene() == "Scene 5":
-			er.EwFont(100, 100, 300, 100, None, "Scene 5", (255, 255, 255)).draw(app.screen)
-		if plot.get_scene() == "Scene 6":
-			er.EwFont(100, 100, 300, 100, None, "Scene 6", (255, 255, 255)).draw(app.screen)
-		if plot.get_scene() == "Scene 7":
-			er.EwFont(100, 100, 300, 100, None, "Scene 7", (255, 255, 255)).draw(app.screen)
-		if plot.get_scene() == "Scene 8":
-			er.EwFont(100, 100, 300, 100, None, "Scene 8", (255, 255, 255)).draw(app.screen)
-		if plot.get_scene() == "Scene 9":
-			er.EwFont(100, 100, 300, 100, None, "Scene 9", (255, 255, 255)).draw(app.screen)
+		player.draw(app.screen)
+		player.move(pygame.key.get_pressed()[pygame.K_UP], 0, PLAYER_SPEED)
+		player.move(pygame.key.get_pressed()[pygame.K_w], 0, PLAYER_SPEED)
+		player.move(pygame.key.get_pressed()[pygame.K_DOWN], 1, PLAYER_SPEED)
+		player.move(pygame.key.get_pressed()[pygame.K_s], 1, PLAYER_SPEED)
+		player.move(pygame.key.get_pressed()[pygame.K_LEFT], 2, PLAYER_SPEED)
+		player.move(pygame.key.get_pressed()[pygame.K_a], 2, PLAYER_SPEED)
+		player.move(pygame.key.get_pressed()[pygame.K_RIGHT], 3, PLAYER_SPEED)
+		player.move(pygame.key.get_pressed()[pygame.K_d], 3, PLAYER_SPEED)
 		
 		if pygame.key.get_pressed()[pygame.K_ESCAPE]:
 			app.state = True

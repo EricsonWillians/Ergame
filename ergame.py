@@ -132,7 +132,7 @@ class EwMovable(EwPos):
 			if direction == 3:
 				self.x += step
 	
-	def move_generically(self, condition, new_x, new_y):
+	def teleport(self, condition, new_x, new_y):
 		if condition:
 			self.x = new_x
 			self.y = new_y

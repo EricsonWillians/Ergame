@@ -1,4 +1,4 @@
-python "run.py"
+python "test.py"
 
 pause
 del "%0"
