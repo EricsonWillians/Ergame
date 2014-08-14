@@ -46,6 +46,12 @@ if __name__ == "__main__":
 		def translate(self):
 			self.y += self.speed
 			
+	class Raid:
+		
+		def __init__(self):
+			
+			pass 
+			
 	en = [Enemy() for x in range(1, 128)]
 
 	ammo_state = er.EwFont(16, 16, 128+16, 16, "Squares Bold Free.otf", "Ammo State: Normal", (255, 255, 255))
@@ -78,15 +84,14 @@ if __name__ == "__main__":
 			player.move(pygame.key.get_pressed()[pygame.K_RIGHT], 3, PLAYER_BOOST)
 			player.move(pygame.key.get_pressed()[pygame.K_d], 3, PLAYER_BOOST)
 			
-		# if pygame.key.get_pressed()[pygame.K_SPACE]:
-		if app.check_if_time_has_elapsed_in_seconds(2):
-			if len(ammo) < 16*16:
-				ammo.append(Bullet(player.x+((PLAYER_SIZE/2)/2), player.y-PLAYER_SIZE))
-			else:
-				for bullet in ammo:
-					if bullet.y < -bullet.h*3:
-						ammo.pop(ammo.index(bullet))
-			pygame.time.delay(10)	
+		if pygame.key.get_pressed()[pygame.K_SPACE]:
+			if app.check_if_time_has_elapsed_in_milliseconds(80):
+				if len(ammo) < 16*16:
+					ammo.append(Bullet(player.x+((PLAYER_SIZE/2)/2), player.y-PLAYER_SIZE))
+				else:
+					for bullet in ammo:
+						if bullet.y < -bullet.h*3:
+							ammo.pop(ammo.index(bullet))	
 				
 		if len(ammo) > 0:
 			for bullet in ammo:

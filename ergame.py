@@ -3,7 +3,9 @@ import pygame.mouse as pymo
 import os
 from itertools import product
 
-PATH = "EWG"
+GRAPHICS_PATH = "EWG"
+SOUNDS_PATH = "EWS"
+MUSIC_PATH = "EWM"
 
 # EXECUTION
 # ======================================================== #
@@ -156,6 +158,24 @@ class EwResizable:
 		self.w = w
 		self.h = h
 		
+	def __getitem__(self, key):
+		
+		if key == "w":
+			return self.w
+		elif key == "h":
+			return self.h
+		elif key == "(wh)":
+			return (self.w, self.h)
+		elif key == "[wh]":
+			return [self.w, self.h]
+		
+	def __setitem__(self, key, value):
+		
+		if key == "w":
+			self.w = value
+		elif key == "h":
+			self.h = value
+		
 	def get_w(self):
 		return self.w
 		
@@ -225,9 +245,9 @@ class EwImage(EwObject):
 		
 		self.filename = filename
 		if ".png" not in self.filename:
-			self.image = pygame.image.load(os.path.join(PATH, filename)).convert()
+			self.image = pygame.image.load(os.path.join(GRAPHICS_PATH, filename)).convert()
 		else:
-			self.image = pygame.Surface.convert_alpha(pygame.image.load(os.path.join(PATH, filename)))
+			self.image = pygame.Surface.convert_alpha(pygame.image.load(os.path.join(GRAPHICS_PATH, filename)))
 			
 		self.transform()
 			
@@ -307,7 +327,7 @@ class EwFont(EwObject):
 		self.text = text
 		self.color = color
 		if self.filename is not None:
-			self.font = pygame.font.Font(os.path.join(PATH, filename), self.w+self.h*2)
+			self.font = pygame.font.Font(os.path.join(GRAPHICS_PATH, filename), self.w+self.h*2)
 		else:
 			self.font = pygame.font.Font(None, self.w+self.h)
 		if bold:
