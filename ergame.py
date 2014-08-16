@@ -3,6 +3,30 @@ import pygame.mouse as pymo
 import os
 from itertools import product
 
+# EXCEPTIONS
+# ======================================================== #
+
+class ErgameError(Exception):
+	
+	def __init__(self, message):
+		
+		Exception.__init__(self, message)
+
+class InvalidDirectionError(ErgameError):
+	
+	def __init__(self):
+		
+		ErgameError.__init__(self, "Only 0, 1, 2 and 3 are valid values as direction numbers.")
+
+class NotMemberOfError(ErgameError):
+	
+	def __init__(self):
+		
+		ErgameError.__init__(self, "The given direction object is not a member of the EwDirection class.")
+
+# CFG
+# ======================================================== #
+
 GRAPHICS_PATH = "EWG"
 SOUNDS_PATH = "EWS"
 MUSIC_PATH = "EWM"
@@ -111,27 +135,56 @@ class EwPos:
 
 	def set_y(self, value):
 		self.y = value
+
+class EwDirection:
+	
+	DIRECTIONS = ["NORTH", "SOUTH", "WEST", "EAST"]
+	
+	def __init__(self, value=0):
 		
+		if value.upper() in ["UP", "DOWN", "LEFT", "RIGHT"]:
+			if value.upper() == "UP":
+				value = "NORTH"
+			elif value.upper() == "DOWN":
+				value = "SOUTH"
+			elif value.upper() == "LEFT":
+				value = "WEST"
+			elif value.upper() == "RIGHT":
+				value = "EAST"
+		
+		if isinstance(value, basestring) and value.upper() in EwDirection.DIRECTIONS:
+			self.value = value.upper()
+		else:
+			if value >= 0 and value <= 3:
+				self.value = value
+			else:
+				raise InvalidDirectionError()
+				
+	def __call__(self):
+		return self.value
+		
+	def get(self):
+		return self.value
+
 class EwMovable(EwPos):
 	
-	def __init__(self, x, y, direction=0, step=1):
+	def __init__(self, x, y):
 		
 		EwPos.__init__(self, x, y)
-		
-		self.direction = direction
-		self.step = step
 	
-	def move(self, condition, direction=None, step=None):
-		if direction is None: direction = self.direction
-		if step is None: step = self.step
+	def move(self, condition, direction=0, step=1):
+		if isinstance(direction, EwDirection):
+			self.direction = direction
+		else:
+			raise NotMemberOfError()
 		if condition:
-			if direction == 0:
+			if direction() == 0 or direction() == "NORTH":
 				self.y -= step
-			if direction == 1:
+			if direction() == 1 or direction() == "SOUTH":
 				self.y += step
-			if direction == 2:
+			if direction() == 2 or direction() == "WEST":
 				self.x -= step
-			if direction == 3:
+			if direction() == 3 or direction() == "EAST":
 				self.x += step
 	
 	def teleport(self, condition, new_x, new_y):
@@ -277,25 +330,25 @@ class EwScrollingImage(EwImage):
 		self.x3_reset_point = self.initial_x + self.w
 		
 	def draw(self, destination_surface):
-		if self.scroll_direction == 0:
+		if self.scroll_direction == 0 or self.scroll_direction == "UP":
 			self.y -= self.scroll_speed
 			if self.y < self.y0_reset_point:
 				self.y = self.initial_y
 			destination_surface.blit(self.image, (self.x, self.y))
 			destination_surface.blit(self.image, (self.x, self.y+self.h))
-		if self.scroll_direction == 1:
+		if self.scroll_direction == 1 or self.scroll_direction == "DOWN":
 			self.y += self.scroll_speed
 			if self.y > self.y1_reset_point:
 				self.y = self.initial_y
 			destination_surface.blit(self.image, (self.x, self.y))
 			destination_surface.blit(self.image, (self.x, self.y-self.h))
-		if self.scroll_direction == 2:
+		if self.scroll_direction == 2 or self.scroll_direction == "LEFT":
 			self.x -= self.scroll_speed
 			if self.x < self.x2_reset_point:
 				self.x = self.initial_x
 			destination_surface.blit(self.image, (self.x, self.y))
 			destination_surface.blit(self.image, (self.x+self.w, self.y))
-		if self.scroll_direction == 3:
+		if self.scroll_direction == 3 or self.scroll_direction == "RIGHT":
 			self.x += self.scroll_speed
 			if self.x > self.x3_reset_point:
 				self.x = self.initial_x

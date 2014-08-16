@@ -66,23 +66,23 @@ if __name__ == "__main__":
 		[x.translate() for x in en]
 
 		if not pygame.key.get_pressed()[pygame.K_LSHIFT]:
-			player.move(pygame.key.get_pressed()[pygame.K_UP], 0, PLAYER_SPEED)
-			player.move(pygame.key.get_pressed()[pygame.K_w], 0, PLAYER_SPEED)
-			player.move(pygame.key.get_pressed()[pygame.K_DOWN], 1, PLAYER_SPEED)
-			player.move(pygame.key.get_pressed()[pygame.K_s], 1, PLAYER_SPEED)
-			player.move(pygame.key.get_pressed()[pygame.K_LEFT], 2, PLAYER_SPEED)
-			player.move(pygame.key.get_pressed()[pygame.K_a], 2, PLAYER_SPEED)
-			player.move(pygame.key.get_pressed()[pygame.K_RIGHT], 3, PLAYER_SPEED)
-			player.move(pygame.key.get_pressed()[pygame.K_d], 3, PLAYER_SPEED)
+			player.move(pygame.key.get_pressed()[pygame.K_UP], er.EwDirection("NORTH"), PLAYER_SPEED)
+			player.move(pygame.key.get_pressed()[pygame.K_w], er.EwDirection("NORTH"), PLAYER_SPEED)
+			player.move(pygame.key.get_pressed()[pygame.K_DOWN], er.EwDirection("SOUTH"), PLAYER_SPEED)
+			player.move(pygame.key.get_pressed()[pygame.K_s], er.EwDirection("SOUTH"), PLAYER_SPEED)
+			player.move(pygame.key.get_pressed()[pygame.K_LEFT], er.EwDirection("WEST"), PLAYER_SPEED)
+			player.move(pygame.key.get_pressed()[pygame.K_a], er.EwDirection("WEST"), PLAYER_SPEED)
+			player.move(pygame.key.get_pressed()[pygame.K_RIGHT], er.EwDirection("EAST"), PLAYER_SPEED)
+			player.move(pygame.key.get_pressed()[pygame.K_d], er.EwDirection("EAST"), PLAYER_SPEED)
 		else:
-			player.move(pygame.key.get_pressed()[pygame.K_UP], 0, PLAYER_BOOST)
-			player.move(pygame.key.get_pressed()[pygame.K_w], 0, PLAYER_BOOST)
-			player.move(pygame.key.get_pressed()[pygame.K_DOWN], 1, PLAYER_BOOST)
-			player.move(pygame.key.get_pressed()[pygame.K_s], 1, PLAYER_BOOST)
-			player.move(pygame.key.get_pressed()[pygame.K_LEFT], 2, PLAYER_BOOST)
-			player.move(pygame.key.get_pressed()[pygame.K_a], 2, PLAYER_BOOST)
-			player.move(pygame.key.get_pressed()[pygame.K_RIGHT], 3, PLAYER_BOOST)
-			player.move(pygame.key.get_pressed()[pygame.K_d], 3, PLAYER_BOOST)
+			player.move(pygame.key.get_pressed()[pygame.K_UP], er.EwDirection("NORTH"), PLAYER_BOOST)
+			player.move(pygame.key.get_pressed()[pygame.K_w], er.EwDirection("NORTH"), PLAYER_BOOST)
+			player.move(pygame.key.get_pressed()[pygame.K_DOWN], er.EwDirection("SOUTH"), PLAYER_BOOST)
+			player.move(pygame.key.get_pressed()[pygame.K_s], er.EwDirection("SOUTH"), PLAYER_BOOST)
+			player.move(pygame.key.get_pressed()[pygame.K_LEFT], er.EwDirection("WEST"), PLAYER_BOOST)
+			player.move(pygame.key.get_pressed()[pygame.K_a], er.EwDirection("WEST"), PLAYER_BOOST)
+			player.move(pygame.key.get_pressed()[pygame.K_RIGHT], er.EwDirection("EAST"), PLAYER_BOOST)
+			player.move(pygame.key.get_pressed()[pygame.K_d], er.EwDirection("EAST"), PLAYER_BOOST)
 			
 		if pygame.key.get_pressed()[pygame.K_SPACE]:
 			if app.check_if_time_has_elapsed_in_milliseconds(80):

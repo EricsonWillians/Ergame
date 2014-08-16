@@ -7,14 +7,12 @@ if __name__ == "__main__":
     SCREEN_HEIGHT = 768
 
     app = er.EwApp("Test App", SCREEN_WIDTH, SCREEN_HEIGHT)
-    player = er.EwImage(100, 100, 64, 64, "player.png")
+    mov = er.EwMovable(0, 0, 0)
 
     def update():
 
         pygame.display.flip()
         app.screen.fill((0, 0, 0))
-
-        player.draw(app.screen)
 
         if pygame.key.get_pressed()[pygame.K_ESCAPE]:
             app.state = True
