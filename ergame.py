@@ -501,7 +501,10 @@ class EwScene:
 	
 	def __init__(self, scene):
 		
-		self.scene = scene
+		if isinstance(scene, basestring):
+			self.scene = scene
+		else:
+			raise NotMemberOfError()
 		
 class EwPlot:
 	
