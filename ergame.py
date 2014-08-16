@@ -319,7 +319,10 @@ class EwScrollingImage(EwImage):
 		
 		EwImage.__init__(self, x, y, w, h, filename)
 		
-		self.scroll_direction = scroll_direction
+		if isinstance(scroll_direction, EwDirection):
+			self.scroll_direction = scroll_direction
+		else:
+			raise NotMemberOfError()
 		self.scroll_speed = scroll_speed
 		self.default_scroll_speed = self.scroll_speed
 		self.initial_y = self.y
@@ -330,25 +333,25 @@ class EwScrollingImage(EwImage):
 		self.x3_reset_point = self.initial_x + self.w
 		
 	def draw(self, destination_surface):
-		if self.scroll_direction == 0 or self.scroll_direction == "UP":
+		if self.scroll_direction() == 0 or self.scroll_direction() == "NORTH":
 			self.y -= self.scroll_speed
 			if self.y < self.y0_reset_point:
 				self.y = self.initial_y
 			destination_surface.blit(self.image, (self.x, self.y))
 			destination_surface.blit(self.image, (self.x, self.y+self.h))
-		if self.scroll_direction == 1 or self.scroll_direction == "DOWN":
+		if self.scroll_direction() == 1 or self.scroll_direction() == "SOUTH":
 			self.y += self.scroll_speed
 			if self.y > self.y1_reset_point:
 				self.y = self.initial_y
 			destination_surface.blit(self.image, (self.x, self.y))
 			destination_surface.blit(self.image, (self.x, self.y-self.h))
-		if self.scroll_direction == 2 or self.scroll_direction == "LEFT":
+		if self.scroll_direction() == 2 or self.scroll_direction() == "WEST":
 			self.x -= self.scroll_speed
 			if self.x < self.x2_reset_point:
 				self.x = self.initial_x
 			destination_surface.blit(self.image, (self.x, self.y))
 			destination_surface.blit(self.image, (self.x+self.w, self.y))
-		if self.scroll_direction == 3 or self.scroll_direction == "RIGHT":
+		if self.scroll_direction() == 3 or self.scroll_direction() == "EAST":
 			self.x += self.scroll_speed
 			if self.x > self.x3_reset_point:
 				self.x = self.initial_x
