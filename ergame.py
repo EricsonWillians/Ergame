@@ -20,9 +20,9 @@ class InvalidDirectionError(ErgameError):
 
 class NotMemberOfError(ErgameError):
 	
-	def __init__(self):
+	def __init__(self, _class):
 		
-		ErgameError.__init__(self, "The given direction object is not a member of the EwDirection class.")
+		ErgameError.__init__(self, "The given direction object is not a member of the " + _class + " class".)
 
 # CFG
 # ======================================================== #
@@ -176,7 +176,7 @@ class EwMovable(EwPos):
 		if isinstance(direction, EwDirection):
 			self.direction = direction
 		else:
-			raise NotMemberOfError()
+			raise NotMemberOfError("EwDirection")
 		if condition:
 			if direction() == 0 or direction() == "NORTH":
 				self.y -= step
@@ -322,7 +322,7 @@ class EwScrollingImage(EwImage):
 		if isinstance(scroll_direction, EwDirection):
 			self.scroll_direction = scroll_direction
 		else:
-			raise NotMemberOfError()
+			raise NotMemberOfError("EwDirection")
 		self.scroll_speed = scroll_speed
 		self.default_scroll_speed = self.scroll_speed
 		self.initial_y = self.y
@@ -504,7 +504,7 @@ class EwScene:
 		if isinstance(scene, basestring):
 			self.scene = scene
 		else:
-			raise NotMemberOfError()
+			raise NotMemberOfError("basestring")
 		
 class EwPlot:
 	
@@ -590,7 +590,7 @@ class EwButton(EwAbstractButton, EwImage):
 		EwAbstractButton.__init__(self)
 		EwImage.__init__(self, x, y, w, h, filename)
 		
-class EwRawButton(EwAbstractButton, EwRect):
+class EwRectButton(EwAbstractButton, EwRect):
 	
 	def __init__(self, x, y, w, h, color=(255,255,255), thickness=1):
 		
