@@ -1,4 +1,4 @@
-python "test.py"
+python "ergame.py"
 
 pause
 del "%0"

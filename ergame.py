@@ -22,7 +22,7 @@ class NotMemberOfError(ErgameError):
     
     def __init__(self, _class):
         
-        ErgameError.__init__(self, "The given direction object is not a member of the " + _class + " class".)
+        ErgameError.__init__(self, "The given direction object is not a member of the " + _class + " class.")
 
 # CFG
 # ======================================================== #
