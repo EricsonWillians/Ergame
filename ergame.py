@@ -36,26 +36,27 @@ MUSIC_PATH = "EWM"
 
 class EwRunnable:
 
-    def __init__(self, initial_state):
+    def __init__(self, initial_state, FPS):
         
         self.state = initial_state
+        self.FPS = FPS
         self.time_elapsed = 0
         self.clock = pygame.time.Clock()
         
     def run(self, f, *args):
         while self.state is not True:
-            dt = self.clock.tick()
+            dt = self.clock.tick(self.FPS)
             self.time_elapsed += dt
             apply(f, args)
         
 class EwApp(EwRunnable):
 
-    def __init__(self, title, w, h, state=False):
+    def __init__(self, title, w, h, FPS, state=False):
 
         pygame.init()
         pygame.font.init()
         
-        EwRunnable.__init__(self, state)
+        EwRunnable.__init__(self, state, FPS)
         
         self.screen = pygame.display.set_mode((w, h))
         pygame.display.set_caption(title)
@@ -400,9 +401,14 @@ class EwFont(EwObject):
     def get_text(self):
         return self.text
     
+    def __call__(self, value):
+		self.text = value
+		self.image = self.font.render(self.text, 1, self.color)
+		self.transform()
+    
     def set_text(self, value):
         self.text = value
-        
+   
     def get_color(self):
         return self.color
         
