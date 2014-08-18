@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     app = er.EwApp("Espace", SCREEN_WIDTH, SCREEN_HEIGHT)
     
-    bg = er.EwScrollingImage(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, "bg.png", 1)
+    bg = er.EwScrollingImage(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, "bg.png", er.EwDirection("SOUTH"))
     
     PLAYER_SIZE = 32
     PLAYER_COLOR = (255, 255, 255)
@@ -32,14 +32,14 @@ if __name__ == "__main__":
     
     class Enemy(er.EwRect):
         
-        SIZES = [x for x in range(0, 2*(16*16), 16)]
+        SIZES = [x for x in range(0, 64, 16)]
         
         def __init__(self):
 
             self.health = 0
             self.speed = uniform(0.3, 0.8)
-            w = Enemy.SIZES[randrange(16, len(Enemy.SIZES)-1)]
-            h = Enemy.SIZES[randrange(16, len(Enemy.SIZES)-1)]
+            w = randrange(16, Enemy.SIZES[len(Enemy.SIZES)-1])
+            h = randrange(16, Enemy.SIZES[len(Enemy.SIZES)-1])
             c = (randrange(125, 255), randrange(125, 255), randrange(125, 255))
             er.EwRect.__init__(self, randrange(8, SCREEN_WIDTH-w), -randrange(h, DISTANCE_LIMIT), w, h, c)
             
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         bg.draw(app.screen)
         ammo_state.draw(app.screen)
         player.draw(app.screen)
-        # [x.draw(app.screen) for x in en]
+        [x.draw(app.screen) for x in en]
         [x.translate() for x in en]
 
         if not pygame.key.get_pressed()[pygame.K_LSHIFT]:
