@@ -62,6 +62,7 @@ if __name__ == "__main__":
 				for bullet in ammo:
 					if er.EwCol(bullet, en)():
 						self.spawn.pop(self.spawn.index(en))
+						ammo.pop(ammo.index(bullet)) 
 						global frags
 						frags += 1
 			
@@ -111,7 +112,7 @@ if __name__ == "__main__":
 					ammo.append(Bullet(player.x+((PLAYER_SIZE/2)/2), player.y-PLAYER_SIZE))
 				else:
 					for bullet in ammo:
-						if bullet.y < -bullet.h*3:
+						if bullet.y < -bullet.h:
 							ammo.pop(ammo.index(bullet))    
 				
 		if len(ammo) > 0:

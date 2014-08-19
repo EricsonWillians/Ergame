@@ -401,6 +401,11 @@ class EwFont(EwObject):
     def get_text(self):
         return self.text
     
+    def update(self, value):
+		self.text = value
+		self.image = self.font.render(self.text, 1, self.color)
+		self.transform()
+    
     def __call__(self, value):
 		self.text = value
 		self.image = self.font.render(self.text, 1, self.color)
