@@ -591,6 +591,18 @@ class EwCircle(EwShape):
 	def draw(self, destination_surface):
 		pygame.draw.circle(destination_surface, self.color, (self.x, self.y), self.radius, self.thickness)
 		
+	def get_radius(self):
+		return self.radius
+		
+class EwEllipse(EwRect):
+	
+	def __init__(self, x, y, w, h, color=(255,255,255), thickness=1):
+		
+		EwRect.__init__(self, x, y, w, h, color, thickness)
+		
+	def draw(self, destination_surface):
+		pygame.draw.ellipse(destination_surface, self.color, (self.x, self.y, self.w, self.h), self.thickness)
+		
 class EwArc(EwShape):
 	
 	def __init__(self, x, y, w, h, start_angle, stop_angle, color=(255,255,255), thickness=1):
@@ -602,14 +614,43 @@ class EwArc(EwShape):
 	def draw(self, destination_surface):
 		pygame.draw.arc(destination_surface, self.color, (self.x, self.y, self.w, self.h), self.start_angle, self.stop_angle, self.thickness)
 		
-	def __call__(self):
-		return (self.start_angle, self.stop_angle)
-		
 	def get_start_angle(self):
 		return self.start_angle
 		
 	def get_stop_angle(self):
 		return self.stop_angle
+
+class EwLine(EwShape):
+	
+	def __init__(self, start_pos, end_pos, color=(255,255,255), thickness=1):
+	
+		EwShape.__init__(self, None, None, None, None, color, thickness)
+		self.start_pos = start_pos
+		self.end_pos = end_pos
+		
+	def draw(self, destination_surface):
+		pygame.draw.line(destination_surface, self.color, self.start_pos, self.end_pos, self.thickness)
+		
+class EwLines:
+	
+	def __init__(self, lines):
+
+		self.lines = lines
+	
+	def draw(self, destination_surface):
+		
+		if len(self.lines) > 0:
+			for line in self.lines:
+				if isinstance(line, EwLine):
+					line.draw(destination_surface)
+				else:
+					raise NotMemberOfError("EwLine")
+					
+	def __call__(self):
+		return self.lines
+		
+	def get_lines(self):
+		return self.lines
 
 # Collision Detection
 # ======================================================== #
