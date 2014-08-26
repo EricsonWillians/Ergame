@@ -581,6 +581,16 @@ class EwPolygon(EwShape):
 	def draw(self, destination_surface):
 		pygame.draw.polygon(destination_surface, self.color, self.pointlist, self.thickness)
 		
+class EwCircle(EwShape):
+	
+	def __init__(self, x, y, radius, color=(255,255,255), thickness=1):
+		
+		EwShape.__init__(self, x, y, radius*2, radius*2, color, thickness)
+		self.radius = radius
+		
+	def draw(self, destination_surface):
+		pygame.draw.circle(destination_surface, self.color, (self.x, self.y), self.radius, self.thickness)
+		
 class EwArc(EwShape):
 	
 	def __init__(self, x, y, w, h, start_angle, stop_angle, color=(255,255,255), thickness=1):
