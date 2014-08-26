@@ -76,6 +76,9 @@ class EwRunnable:
 		self.time_elapsed = 0
 		self.clock = pygame.time.Clock()
 		
+	def __call__(self):
+		self.state = True
+		
 	def run(self, f, *args):
 		while self.state is not True:
 			dt = self.clock.tick(self.FPS)
@@ -86,7 +89,7 @@ class EwRunnable:
 		
 		for e in pygame.event.get():
 			if e.type == pygame.QUIT:
-				self.state = True
+				self()
 		
 class EwApp(EwRunnable):
 
@@ -518,6 +521,26 @@ class EwRect(EwShape):
 		
 	def draw_ellipse(self, destination_surface):
 		pygame.draw.ellipse(destination_surface, self.color, (self.x, self.y, self.w, self.h), self.thickness)
+		
+class EwArc(EwShape):
+	
+	def __init__(self, x, y, w, h, start_angle, stop_angle, color=(255,255,255), thickness=1):
+		
+		EwShape.__init__(self, x, y, w, h, color, thickness)
+		self.start_angle = start_angle
+		self.stop_angle = stop_angle
+		
+	def draw(self, destination_surface):
+		pygame.draw.arc(destination_surface, self.color, (self.x, self.y, self.w, self.h), self.start_angle, self.stop_angle, self.thickness)
+		
+	def __call__(self):
+		return (self.start_angle, self.stop_angle)
+		
+	def get_start_angle(self):
+		return self.start_angle
+		
+	def get_stop_angle(self):
+		return self.stop_angle
 
 # Collision Detection
 # ======================================================== #
