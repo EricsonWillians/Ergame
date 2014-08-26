@@ -571,6 +571,16 @@ class EwRect(EwShape):
 	def draw_ellipse(self, destination_surface):
 		pygame.draw.ellipse(destination_surface, self.color, (self.x, self.y, self.w, self.h), self.thickness)
 		
+class EwPolygon(EwShape):
+	
+	def __init__(self, pointlist, color=(255,255,255), thickness=1):
+		
+		EwShape.__init__(self, None, None, None, None, color, thickness)
+		self.pointlist = pointlist
+		
+	def draw(self, destination_surface):
+		pygame.draw.polygon(destination_surface, self.color, self.pointlist, self.thickness)
+		
 class EwArc(EwShape):
 	
 	def __init__(self, x, y, w, h, start_angle, stop_angle, color=(255,255,255), thickness=1):
