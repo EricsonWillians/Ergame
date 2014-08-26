@@ -162,11 +162,30 @@ class EwApp(EwRunnable, EwData):
 		EwRunnable.__init__(self, state, FPS)
 		EwData.__init__(self)
 		
-		if fullscreen == True:
-			self.screen = pygame.display.set_mode((w, h), pygame.FULLSCREEN)
+		if os.path.isfile("conf.edt"):
+			self["TITLE"] = self.load("conf.edt")["TITLE"]
+			self["SCREEN_WIDTH"] = self.load("conf.edt")["SCREEN_WIDTH"]
+			self["SCREEN_HEIGHT"] = self.load("conf.edt")["SCREEN_WIDTH"]
+			self["FPS"] = self.load("conf.edt")["FPS"]
+			self["FULLSCREEN"] = self.load("conf.edt")["FULLSCREEN"]
+			print "Configuration dictionary loaded:\n===============================\n"
+			for item in self.data.items():
+				print "{}: {}".format(str(item[0]), str(item[1]))
 		else:
-			self.screen = pygame.display.set_mode((w, h))
-		pygame.display.set_caption(title)
+			self["TITLE"] = title
+			self["SCREEN_WIDTH"] = w
+			self["SCREEN_HEIGHT"] = h
+			self["FPS"] = FPS
+			self["FULLSCREEN"] = fullscreen
+			self.write("conf.edt")
+			print "Configuration dictionary saved."
+		
+		if self["FULLSCREEN"] == True:
+			self.screen = pygame.display.set_mode((self["SCREEN_WIDTH"], self["SCREEN_HEIGHT"]), pygame.FULLSCREEN)
+		else:
+			self.screen = pygame.display.set_mode((self["SCREEN_WIDTH"], self["SCREEN_HEIGHT"]))
+		pygame.display.set_caption(self["TITLE"])
+		
 
 	def check_if_time_has_elapsed_in_milliseconds(self, milliseconds):
 		if self.time_elapsed > milliseconds:
