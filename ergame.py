@@ -29,6 +29,7 @@ TWITTER: https://twitter.com/poisonewein
 
 import pygame
 import pygame.mouse as pymo
+import json
 import os
 from itertools import product
 
@@ -51,7 +52,13 @@ class NotMemberOfError(ErgameError):
 	
 	def __init__(self, _class):
 		
-		ErgameError.__init__(self, "The given direction object is not a member of the " + _class + " class.")
+		ErgameError.__init__(self, "The given direction object is not a member of the " + _class + " class(es).")
+		
+class FileNotFoundError(ErgameError):
+	
+	def __init__(self, _file):
+		
+		ErgameError.__init__(self, "The file " + _file + " could not be found.")
 
 # CFG
 # ======================================================== #
@@ -59,6 +66,63 @@ class NotMemberOfError(ErgameError):
 GRAPHICS_PATH = "EWG"
 SOUNDS_PATH = "EWS"
 MUSIC_PATH = "EWM"
+
+# DATA MANIPULATION
+# ======================================================== #
+
+def loadSound(path, name):
+
+	class NoneSound:
+		def play(self): pass
+	if not pygame.mixer:
+		return NoneSound()
+	fullname = os.path.join(path, name)
+	try:
+		sound = pygame.mixer.Sound(fullname)
+	except pygame.error, message:
+		print "Cannot load sound:", name
+		raise SystemExit, message
+	return sound
+	
+class EwSerializable:
+	
+	def __init__(self):
+		
+		self.file = None
+		
+	def serialize(self, path, mode):	
+		try:
+			self.file = open(path, mode)
+		except:
+			raise FileNotFoundError()
+		if self.file is not None:
+			return self.file
+			self.file.close()
+
+class EwData(EwSerializable):
+	
+	def __init__(self):
+		
+		EwSerializable.__init__(self)
+		self.data = {}
+		
+	def __setitem__(self, key, value):
+		self.data[key] = value
+		
+	def __getitem__(self, key):
+		return self.data[key]
+		
+	def get_data(self):
+		return self.data
+		
+	def write(self, path):
+		self.serialize(path, "w").write(json.dumps(self.get_data()))
+		
+	def load(self, path):
+		json_data = open(path, "r")
+		self.data = json.load(json_data)
+		json_data.close()
+		return self.data
 
 # EXECUTION
 # ======================================================== #
@@ -91,11 +155,12 @@ class EwRunnable:
 			if e.type == pygame.QUIT:
 				self()
 		
-class EwApp(EwRunnable):
+class EwApp(EwRunnable, EwData):
 
 	def __init__(self, title, w, h, FPS, fullscreen=False, state=False):
 
 		EwRunnable.__init__(self, state, FPS)
+		EwData.__init__(self)
 		
 		if fullscreen == True:
 			self.screen = pygame.display.set_mode((w, h), pygame.FULLSCREEN)
@@ -124,37 +189,8 @@ class EwApp(EwRunnable):
 		else:
 			return False
 
-# DATA MANIPULATION
+# POSITIONS AND DIMENSIONS
 # ======================================================== #
-
-def loadSound(path, name):
-
-	class NoneSound:
-		def play(self): pass
-	if not pygame.mixer:
-		return NoneSound()
-	fullname = os.path.join(path, name)
-	try:
-		sound = pygame.mixer.Sound(fullname)
-	except pygame.error, message:
-		print "Cannot load sound:", name
-		raise SystemExit, message
-	return sound
-
-class EwData:
-	
-	def __init__(self):
-		
-		self.data = {}
-		
-	def __setitem__(self, key, value):
-		self.data[key] = value
-		
-	def __getitem__(self, key):
-		return self.data[key]
-		
-	def get_data(self):
-		return self.data
 		
 class EwPos:
 	
@@ -346,12 +382,6 @@ class EwObject(EwData, EwMovable, EwResizable):
 		
 	def get(self):
 		return (self.x, self.y, self.w, self.h)
-		
-	def __setitem__(self, key, value):
-		self.data[key] = value
-		
-	def __getitem__(self, key):
-		return self.data[key]
 		
 class EwImage(EwObject):
 	
