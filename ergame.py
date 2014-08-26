@@ -236,6 +236,9 @@ class EwPos:
 		elif key == "y":
 			self.y = value
 		
+	def __call__(self):
+		return (self.x, self.y)
+		
 	def get_x(self):
 		return self.x
 		
@@ -399,7 +402,7 @@ class EwObject(EwData, EwMovable, EwResizable):
 		EwMovable.__init__(self, x, y)
 		EwResizable.__init__(self, w, h)
 		
-	def get(self):
+	def __call__(self):
 		return (self.x, self.y, self.w, self.h)
 		
 class EwImage(EwObject):
@@ -546,6 +549,9 @@ class EwShape(EwObject):
 		
 		self.color = color
 		self.thickness = thickness
+		
+	def __call__(self):
+		return (self.x, self.y, self.w, self.h, self.color, self.thickness)
 		
 	def get_color(self):
 		return self.color
