@@ -1,6 +1,6 @@
 Ergame
-The encapsulated solution for Game Development with Python.
 ======
+The encapsulated solution for Game Development with Python.
 
 An open-source object-oriented engine for game development in [Python 2.7](https://www.python.org/download/releases/2.7/) with [Pygame](http://www.pygame.org/news.html).
 
