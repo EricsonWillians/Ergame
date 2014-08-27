@@ -5,7 +5,7 @@ An open-source object-oriented engine for game development in Python 2.7 with Py
 
 [Check out the Ergame wiki I'm writing in order to learn how to use it](https://github.com/EricsonWillians/Ergame/wiki).
 
-Download **ergame.py** and check out with this minimum code how easy it is to setup a basic window with working close operation right now!
+Download **ergame.py** and check out how easy it is to setup a basic window with working close operation with just a few lines of code!
 
 ```
 import ergame as er
