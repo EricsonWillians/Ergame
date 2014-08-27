@@ -808,3 +808,12 @@ class EwRectButton(EwAbstractButton, EwRect):
 		
 		EwAbstractButton.__init__(self, x+(w/2)-(font_width/2), y+(h/2)-(font_height/2), font_width, font_height, font_filename, text, font_color, bold)
 		EwRect.__init__(self, x, y, w, h, color, thickness)
+		
+# Environment
+# ======================================================== #
+
+class EwEnvironment(EwData):
+	
+	def __init__(self):
+		
+		EwData.__init__(self)
