@@ -21,3 +21,5 @@ if __name__ == "__main__":
 	app.run(update)
 
 ```
+
+Learning how to program by my own was really hard, and I painfully discovered how hard it is to do anything related to game development at first. That's why I've created Ergame: To do my best to make things easier for you (And for me, considering that this is the engine I'll use in all my games).
