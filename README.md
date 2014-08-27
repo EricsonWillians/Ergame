@@ -2,7 +2,7 @@ Ergame
 ======
 The encapsulated solution for Game Development with Python.
 
-* Ergame is an open-source object-oriented engine for game development in [Python 2.7](https://www.python.org/download/releases/2.7/) with [Pygame](http://www.pygame.org/news.html) (You only need to have these installed).
+* Ergame is an open-source object-oriented engine for game development with [Python 2.7](https://www.python.org/download/releases/2.7/) and [Pygame](http://www.pygame.org/news.html) (You only need to have these installed).
 
 [Check out the Ergame wiki I'm writing in order to learn how to use it](https://github.com/EricsonWillians/Ergame/wiki).
 
