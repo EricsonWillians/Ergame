@@ -67,6 +67,13 @@ GRAPHICS_PATH = "EWG"
 SOUNDS_PATH = "EWS"
 MUSIC_PATH = "EWM"
 
+# CONSTANTS
+# ======================================================== #
+
+ARROWS = 0
+WASD = 1
+BOTH = 2
+
 # DATA MANIPULATION
 # ======================================================== #
 
@@ -314,6 +321,32 @@ class EwMovable(EwPos):
 			if direction() == 3 or direction() == "EAST":
 				self.x += step
 	
+	def setup_movement(self, movement_type, step_pattern):
+		key = pygame.key.get_pressed
+		if isinstance(step_pattern, list):
+			steps = step_pattern
+		else:
+			raise NotMemberOfError("basestring")
+		if movement_type == ARROWS:
+			self.move(key()[pygame.K_UP], EwDirection("NORTH"), steps[0])
+			self.move(key()[pygame.K_DOWN], EwDirection("SOUTH"), steps[1])
+			self.move(key()[pygame.K_LEFT], EwDirection("WEST"), steps[2])
+			self.move(key()[pygame.K_RIGHT], EwDirection("EAST"), steps[3])
+		elif movement_type == WASD:
+			self.move(key()[pygame.K_w], EwDirection("NORTH"), steps[0])
+			self.move(key()[pygame.K_s], EwDirection("SOUTH"), steps[1])
+			self.move(key()[pygame.K_a], EwDirection("WEST"), steps[2])
+			self.move(key()[pygame.K_d], EwDirection("EAST"), steps[3])
+		elif movement_type == BOTH:
+			self.move(key()[pygame.K_UP], EwDirection("NORTH"), steps[0])
+			self.move(key()[pygame.K_DOWN], EwDirection("SOUTH"), steps[1])
+			self.move(key()[pygame.K_LEFT], EwDirection("WEST"), steps[2])
+			self.move(key()[pygame.K_RIGHT], EwDirection("EAST"), steps[3])
+			self.move(key()[pygame.K_w], EwDirection("NORTH"), steps[0])
+			self.move(key()[pygame.K_s], EwDirection("SOUTH"), steps[1])
+			self.move(key()[pygame.K_a], EwDirection("WEST"), steps[2])
+			self.move(key()[pygame.K_d], EwDirection("EAST"), steps[3])
+		
 	def teleport(self, condition, new_x, new_y):
 		if condition:
 			self.x = new_x
