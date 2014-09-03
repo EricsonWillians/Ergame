@@ -598,6 +598,11 @@ class EwFont(EwObject):
 		self.text = value
 		self.image = self.font.render(self.text, 1, self.color)
 		self.transform()
+		
+	def update_color(self, color):
+		self.color = color
+		self.image = self.font.render(self.text, 1, self.color)
+		self.transform()
 	
 	def __call__(self, value):
 		self.text = value
@@ -862,6 +867,12 @@ class EwAbstractButton:
 			if not pygame.key.get_pressed()[key]:
 				return False
 		
+	def change_font_color_when_hovering(self, color):
+		if self.hover(pygame.mouse.get_pos()):
+			self.font.update_color(color)
+		else:
+			self.font.update_color(self.font_backup_color)
+		
 	def get_font_size(self):
 		return self.font_size
 		
@@ -887,6 +898,19 @@ class EwRectButton(EwAbstractButton, EwRect):
 		
 		EwAbstractButton.__init__(self, x+(w/2)-(font_width/2), y+(h/2)-(font_height/2), font_width, font_height, font_filename, text, font_color, bold)
 		EwRect.__init__(self, x, y, w, h, color, thickness)
+		self.rd = EwRect.draw
+		self.backup_color = color
+		self.font_backup_color = self.font.color
+		
+	def draw(self, destination_surface):
+		self.rd(self, destination_surface)
+		self.font.draw(destination_surface)
+		
+	def change_color_when_hovering(self, color):
+		if self.hover(pygame.mouse.get_pos()):
+			self.color = color
+		else:
+			self.color = self.backup_color
 		
 # Environment
 # ======================================================== #
