@@ -73,6 +73,12 @@ MUSIC_PATH = "EWM"
 ARROWS = 0
 WASD = 1
 BOTH = 2
+ACCEPTABLE_KEYS = [pygame.K_PERIOD, pygame.K_COMMA, pygame.K_SLASH, pygame.K_BACKSLASH, pygame.K_LEFTBRACKET, 
+				   pygame.K_RIGHTBRACKET, pygame.K_MINUS, pygame.K_EQUALS, pygame.K_SEMICOLON,
+				   pygame.K_0, pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9,
+				   pygame.K_a, pygame.K_b, pygame.K_c, pygame.K_d, pygame.K_e, pygame.K_f, pygame.K_g, pygame.K_h, pygame.K_i, pygame.K_j,
+				   pygame.K_k, pygame.K_l, pygame.K_m, pygame.K_n, pygame.K_o, pygame.K_p, pygame.K_q, pygame.K_r, pygame.K_s, pygame.K_t,
+				   pygame.K_u, pygame.K_v, pygame.K_w, pygame.K_x, pygame.K_y, pygame.K_z]
 
 # DATA MANIPULATION
 # ======================================================== #
@@ -107,6 +113,8 @@ class EwSerializable:
 			self.file.close()
 
 class EwData(EwSerializable):
+	
+	app = None
 	
 	def __init__(self):
 		
@@ -146,6 +154,7 @@ class EwRunnable:
 		self.FPS = FPS
 		self.time_elapsed = 0
 		self.clock = pygame.time.Clock()
+		self.events = []
 		
 	def __call__(self):
 		self.state = True
@@ -154,12 +163,12 @@ class EwRunnable:
 		while self.state is not True:
 			dt = self.clock.tick(self.FPS)
 			self.time_elapsed += dt
+			self.events = pygame.event.get();
 			apply(f, args)
 			pygame.display.flip()
 			
 	def watch_for_exit(self):
-		
-		for e in pygame.event.get():
+		for e in self.events:
 			if e.type == pygame.QUIT:
 				self()
 		
@@ -169,6 +178,7 @@ class EwApp(EwRunnable, EwData):
 
 		EwRunnable.__init__(self, state, FPS)
 		EwData.__init__(self)
+		EwData.app = self
 		
 		if os.path.isfile("conf.edt"):
 			self["TITLE"] = self.load("conf.edt")["TITLE"]
@@ -455,9 +465,17 @@ class EwObject(EwDrawable, EwData, EwMovable, EwResizable):
 		EwData.__init__(self)
 		EwMovable.__init__(self, x, y)
 		EwResizable.__init__(self, w, h)
+		self.has_focus = False
 		
 	def __call__(self):
 		return (self.x, self.y, self.w, self.h)
+		
+	def get_app(self):
+		if EwData.app is not None:
+			return EwData.app
+			
+	def get_focus(self):
+		return self.has_focus
 		
 class EwImage(EwObject):
 	
@@ -844,6 +862,78 @@ def get_standard_plot():
 # GUI
 # ======================================================== #
 
+class EwCarret(EwRect):
+	
+	def __init__(self, x, y, w, h, color, thickness, blinking_delay):
+		
+		self.blinking_delay = blinking_delay
+		EwRect.__init__(self, x, y, w, h, color, thickness)
+		self.rd = EwRect.draw
+		self.counter = 0
+		
+	def draw(self, destination_surface):
+		self.counter += 1
+		if self.counter < self.blinking_delay:
+			self.rd(self, destination_surface)
+		elif self.counter >= self.blinking_delay*2:
+			self.counter = 0
+
+	def set_blinking_delay(self, value):
+		self.blinking_delay = value
+
+class EwInput(EwRect):
+	
+	def __init__(self, x, y, w, h, carret_color, font_filename, label, font_color, char_limit=100, bold=False, carret=None):
+		
+		self.label = label
+		self.label_font = EwFont(x, y, w/3, h, font_filename, self.label, font_color, bold)
+		EwRect.__init__(self, x, y, w, h)
+		self.rd = EwRect.draw
+		self.font = EwFont((x + self.label_font.w) + 2, y, w/12, h, font_filename, "", font_color, bold)
+		self.last_key = None
+		self.char_limit = char_limit
+		self.message = []
+		if carret is None:
+			self.carret = EwCarret(self.font.x+(self.w/16)+10, y, w/16, h, carret_color , 0, 40)
+		else:
+			if isinstance(carret, EwCarret):
+				self.carret = carret
+			else:
+				raise NotMemberOfError("EwCarret")
+
+	def update_message(self, destination_surface):
+		if len(self.message) < self.char_limit:
+			for e in EwData.app.events:
+				if e.type == pygame.KEYDOWN:
+					self.last_key = e.key
+					if self.last_key is not None and self.last_key in ACCEPTABLE_KEYS:
+						if pygame.key.get_pressed()[pygame.K_RSHIFT]:
+							self.message.append(pygame.key.name(int(self.last_key)).upper())
+						else:
+							self.message.append(pygame.key.name(int(self.last_key)))
+						self.font.w += self.w / 16
+						self.carret.x += self.w / 16
+			if pygame.key.get_pressed()[pygame.K_SPACE]:
+				if EwData.app.check_if_time_has_elapsed_in_milliseconds(250):
+					self.message.append(" ")
+					self.font.w += self.w / 16
+					self.carret.x += self.w / 16
+		if pygame.key.get_pressed()[pygame.K_BACKSPACE]:
+			if len(self.message) > 0:
+				if EwData.app.check_if_time_has_elapsed_in_milliseconds(180):
+					self.font.w -= self.w / 16
+					self.carret.x -= self.w / 16
+					self.message.pop()
+		else:
+			self.carret.draw(destination_surface)
+	
+	def draw(self, destination_surface):
+		self.label_font.draw(destination_surface)
+		self.update_message(destination_surface)
+		if len(self.message) > 0:
+			self.font("".join(self.message))
+			self.font.draw(destination_surface)
+		
 class EwAbstractButton:
 	
 	def __init__(self, x, y, font_width, font_height, font_filename, text, font_color, bold=False):
