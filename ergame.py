@@ -52,13 +52,25 @@ class NotMemberOfError(ErgameError):
 	
 	def __init__(self, _class):
 		
-		ErgameError.__init__(self, "The given direction object is not a member of the " + _class + " class(es).")
+		ErgameError.__init__(self, "The given object is not a member of the <{}> class(es).".format(_class))
 		
 class FileNotFoundError(ErgameError):
 	
 	def __init__(self, _file):
 		
-		ErgameError.__init__(self, "The file " + _file + " could not be found.")
+		ErgameError.__init__(self, "The file {} could not be found.".format(_file))
+		
+class MoreColorsThanButtonsError(ErgameError):
+	
+	def __init__(self, difference):
+		
+		ErgameError.__init__(self, "You've given more colors than there are available buttons. {}, precisely. What's on your mind?".format(difference))
+
+class MoreKeysThanButtonsError(ErgameError):
+	
+	def __init__(self, difference):
+		
+		ErgameError.__init__(self, "You've given more keys than there are available buttons. {}, precisely. What's on your mind?".format(difference))
 
 # CFG
 # ======================================================== #
@@ -445,7 +457,52 @@ class EwPositioningSystem(EwResizable):
 		self.y = dict(zip([y for y in self.key_positions[1]], [y for y in range(0, h, h/sh)]))
 		self.coords = list(product(self.y.keys(), self.x.keys()))
 		self.sh = sh
+
+# Collision Detection
+# ======================================================== #
+
+class EwCol:
+	
+	def __init__(self, o, oo):
 		
+		self.o = o
+		self.oo = oo
+		self.ox = self.o.x
+		self.oy = self.o.y
+		self.ow = self.o.w
+		self.oh = self.o.h
+		self.oox = self.oo.x
+		self.ooy = self.oo.y
+		self.oow = self.oo.w
+		self.ooh = self.oo.h
+		
+	def __call__(self):
+		
+		if ((((self.ox + self.ow) > self.oox) and (self.ox < (self.oox + self.oow))) and (((self.oy + self.oh) > self.ooy) and (self.oy < (self.ooy + self.ooh)))):
+			return True
+		else:
+			return False
+			
+class EwMouseCol:
+	
+	def __init__(self, o, oo):
+		
+		self.o = o
+		self.oo = oo
+		self.ox = self.o[0]
+		self.oy = self.o[1]
+		self.oox = self.oo.x
+		self.ooy = self.oo.y
+		self.oow = self.oo.w
+		self.ooh = self.oo.h
+		
+	def __call__(self):
+		
+		if (((self.ox > self.oox) and (self.ox < (self.oox + self.oow))) and ((self.oy > self.ooy) and (self.oy < (self.ooy + self.ooh)))):
+			return True
+		else:
+			return False
+
 # Object Manipulation
 # ======================================================== #
 
@@ -474,8 +531,11 @@ class EwObject(EwDrawable, EwData, EwMovable, EwResizable):
 		if EwData.app is not None:
 			return EwData.app
 			
-	def get_focus(self):
-		return self.has_focus
+	def watch_for_focus(self):
+		if EwMouseCol(pygame.mouse.get_pos(), self)() and pygame.mouse.get_pressed()[0]:
+			self.has_focus = True
+		if EwMouseCol(pygame.mouse.get_pos(), self)() and pygame.mouse.get_pressed()[2]:
+			self.has_focus = False
 		
 class EwImage(EwObject):
 	
@@ -760,51 +820,6 @@ class EwLines:
 	def get_lines(self):
 		return self.lines
 
-# Collision Detection
-# ======================================================== #
-
-class EwCol:
-	
-	def __init__(self, o, oo):
-		
-		self.o = o
-		self.oo = oo
-		self.ox = self.o.x
-		self.oy = self.o.y
-		self.ow = self.o.w
-		self.oh = self.o.h
-		self.oox = self.oo.x
-		self.ooy = self.oo.y
-		self.oow = self.oo.w
-		self.ooh = self.oo.h
-		
-	def __call__(self):
-		
-		if ((((self.ox + self.ow) > self.oox) and (self.ox < (self.oox + self.oow))) and (((self.oy + self.oh) > self.ooy) and (self.oy < (self.ooy + self.ooh)))):
-			return True
-		else:
-			return False
-			
-class EwMouseCol:
-	
-	def __init__(self, o, oo):
-		
-		self.o = o
-		self.oo = oo
-		self.ox = self.o[0]
-		self.oy = self.o[1]
-		self.oox = self.oo.x
-		self.ooy = self.oo.y
-		self.oow = self.oo.w
-		self.ooh = self.oo.h
-		
-	def __call__(self):
-		
-		if (((self.ox > self.oox) and (self.ox < (self.oox + self.oow))) and ((self.oy > self.ooy) and (self.oy < (self.ooy + self.ooh)))):
-			return True
-		else:
-			return False
-
 # Screen Management
 # ======================================================== #
 
@@ -902,30 +917,31 @@ class EwInput(EwRect):
 				raise NotMemberOfError("EwCarret")
 
 	def update_message(self, destination_surface):
-		if len(self.message) < self.char_limit:
-			for e in EwData.app.events:
-				if e.type == pygame.KEYDOWN:
-					self.last_key = e.key
-					if self.last_key is not None and self.last_key in ACCEPTABLE_KEYS:
-						if pygame.key.get_pressed()[pygame.K_RSHIFT]:
-							self.message.append(pygame.key.name(int(self.last_key)).upper())
-						else:
-							self.message.append(pygame.key.name(int(self.last_key)))
+		if self.has_focus:
+			if (len(self.message) < self.char_limit):
+				for e in EwData.app.events:
+					if e.type == pygame.KEYDOWN:
+						self.last_key = e.key
+						if self.last_key is not None and self.last_key in ACCEPTABLE_KEYS:
+							if pygame.key.get_pressed()[pygame.K_RSHIFT]:
+								self.message.append(pygame.key.name(int(self.last_key)).upper())
+							else:
+								self.message.append(pygame.key.name(int(self.last_key)))
+							self.font.w += self.w / 16
+							self.carret.x += self.w / 16
+				if pygame.key.get_pressed()[pygame.K_SPACE]:
+					if EwData.app.check_if_time_has_elapsed_in_milliseconds(250):
+						self.message.append(" ")
 						self.font.w += self.w / 16
 						self.carret.x += self.w / 16
-			if pygame.key.get_pressed()[pygame.K_SPACE]:
-				if EwData.app.check_if_time_has_elapsed_in_milliseconds(250):
-					self.message.append(" ")
-					self.font.w += self.w / 16
-					self.carret.x += self.w / 16
-		if pygame.key.get_pressed()[pygame.K_BACKSPACE]:
-			if len(self.message) > 0:
-				if EwData.app.check_if_time_has_elapsed_in_milliseconds(180):
-					self.font.w -= self.w / 16
-					self.carret.x -= self.w / 16
-					self.message.pop()
-		else:
-			self.carret.draw(destination_surface)
+			if pygame.key.get_pressed()[pygame.K_BACKSPACE]:
+				if len(self.message) > 0:
+					if EwData.app.check_if_time_has_elapsed_in_milliseconds(180):
+						self.font.w -= self.w / 16
+						self.carret.x -= self.w / 16
+						self.message.pop()
+			else:
+				self.carret.draw(destination_surface)
 	
 	def draw(self, destination_surface):
 		self.label_font.draw(destination_surface)
@@ -1001,6 +1017,54 @@ class EwRectButton(EwAbstractButton, EwRect):
 			self.color = color
 		else:
 			self.color = self.backup_color
+			
+class EwRectMenu(EwRect):
+	
+	def __init__(self, x, y, w, height_of_each_button, color, thickness, buttons):
+		
+		self.height_of_each_button = height_of_each_button
+		if isinstance(buttons, list):
+			self.buttons = [EwRectButton(x, y+(n*height_of_each_button), w, self.height_of_each_button, buttons[n][0], buttons[n][1], 
+				w-2, self.height_of_each_button-2, buttons[n][2], buttons[n][3], buttons[n][4], buttons[n][5]) for n in range(len(buttons))]
+		else:
+			raise NotMemberOfError("list")
+		EwRect.__init__(self, x, y, w, self.height_of_each_button*len(self.buttons), color, thickness)
+		self.rd = EwRect.draw
+		
+	def draw(self, destination_surface):
+		self.rd(self, destination_surface)
+		[button.draw(destination_surface) for button in self.buttons]
+		
+	def change_button_colors_when_hovering(self, colors):
+		if isinstance(colors, list):
+			if len(colors) > 0:
+				for color in colors:
+					if isinstance(color, tuple):
+						if len(colors) > len(self.buttons):
+							raise MoreColorsThanButtonsError(len(colors)-len(self.buttons))
+							for button in self.buttons:
+								button.change_color_when_hovering(color)
+						elif len(colors) < len(self.buttons):
+							for button in self.buttons:
+								button.change_color_when_hovering(colors[0])
+					else:
+						raise NotMemberOfError("tuple")
+		else:
+			raise NotMemberOfError("list")
+	
+	def hover_over_buttons(self, mouse_pos):
+		return [b.hover(mouse_pos) for b in self.buttons]
+	
+	def press_buttons(self, mouse_pos, mouse_button, keys):
+		if isinstance(keys, list):
+			if len(keys) > 0:
+				if len(keys) > len(self.buttons):
+					raise MoreKeysThanButtonsError(len(keys)-len(self.buttons))
+				elif len(keys) < len(self.buttons):
+					return [b.press(mouse_pos, mouse_button, None) for b in self.buttons]
+				else:
+					return [b.press(mouse_pos, mouse_button, keys[self.buttons.index(b)]) for b in self.buttons]
+				
 		
 # Environment
 # ======================================================== #
