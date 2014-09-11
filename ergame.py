@@ -31,6 +31,7 @@ import pygame
 import pygame.mouse as pymo
 import json
 import os
+import bisect
 from itertools import product
 
 # EXCEPTIONS
@@ -190,7 +191,6 @@ class EwApp(EwRunnable, EwData):
 
 		EwRunnable.__init__(self, state, FPS)
 		EwData.__init__(self)
-		EwData.app = self
 		
 		if os.path.isfile("conf.edt"):
 			self["TITLE"] = self.load("conf.edt")["TITLE"]
@@ -215,6 +215,7 @@ class EwApp(EwRunnable, EwData):
 		else:
 			self.screen = pygame.display.set_mode((self["SCREEN_WIDTH"], self["SCREEN_HEIGHT"]))
 		pygame.display.set_caption(self["TITLE"])
+		EwData.app = self
 		
 
 	def check_if_time_has_elapsed_in_milliseconds(self, milliseconds):
@@ -422,41 +423,6 @@ class EwResizable:
 		
 	def set_h(self, value):
 		self.h = value
-		
-class EwPositioningSystem(EwResizable):
-	
-	def __init__(self, option, sharpness=1):
-		
-		CONST_SHARPNESS = 16
-		
-		if option == 0:
-			w = 640
-			h = 480
-		elif option == 1:
-			w = 800
-			h = 600
-		elif option == 2:
-			w = 1024
-			h = 768
-		elif option == 3:
-			w = 1280
-			h = 1024
-		elif option == 4:
-			w = 1680
-			h = 1050
-		
-		if sharpness != 0:
-			sh = CONST_SHARPNESS*sharpness
-		else:
-			sh = CONST_SHARPNESS*1
-	
-		EwResizable.__init__(self, w, h)
-		
-		self.key_positions = [[x for x in range(sh)], [y for y in range(sh)]]
-		self.x = dict(zip([x for x in self.key_positions[0]], [x for x in range(0, w, w/sh)]))
-		self.y = dict(zip([y for y in self.key_positions[1]], [y for y in range(0, h, h/sh)]))
-		self.coords = list(product(self.y.keys(), self.x.keys()))
-		self.sh = sh
 
 # Collision Detection
 # ======================================================== #
@@ -515,7 +481,7 @@ class EwDrawable(EwMovable, EwResizable):
 		self.surface = pygame.Surface((w, h))
 		
 	def __call__(self):
-		return (self.x, self.y, self.w, self.h)
+		return self.surface
 		
 	def draw(self, destination_surface):
 		pass
@@ -528,6 +494,9 @@ class EwObject(EwDrawable, EwData):
 		EwData.__init__(self)		
 		self.has_focus = False
 		
+	def get(self):
+		return (self.x, self.y, self.w, self.h)
+		
 	def get_app(self):
 		if EwData.app is not None:
 			return EwData.app
@@ -536,8 +505,8 @@ class EwObject(EwDrawable, EwData):
 		if EwMouseCol(pygame.mouse.get_pos(), self)() and pygame.mouse.get_pressed()[0]:
 			self.has_focus = True
 		if EwMouseCol(pygame.mouse.get_pos(), self)() and pygame.mouse.get_pressed()[2]:
-			self.has_focus = False
-		
+			self.has_focus = False		
+
 class EwImage(EwObject):
 	
 	def __init__(self, x, y, w, h, filename, alpha=255):
@@ -583,8 +552,11 @@ class EwImage(EwObject):
 		else:
 			return False 
 			
-	def draw(self, destination_surface):
-		destination_surface.blit(self.surface, (self.x, self.y))
+	def draw(self, destination_surface=None):
+		if destination_surface is None:
+			EwData.app.screen.blit(self.surface, (self.x, self.y))
+		else:
+			destination_surface.blit(self.surface, (self.x, self.y))
 		
 class EwScrollingImage(EwImage):
 	
@@ -605,31 +577,54 @@ class EwScrollingImage(EwImage):
 		self.x2_reset_point = self.initial_x - self.w
 		self.x3_reset_point = self.initial_x + self.w
 		
-	def draw(self, destination_surface):
+	def draw(self, destination_surface=None):
+		def blit(_dir):
+			if destination_surface is None:
+				if _dir == 0:
+					EwData.app.screen.blit(self.surface, (self.x, self.y))
+					EwData.app.screen.blit(self.surface, (self.x, self.y+self.h))
+				elif _dir == 1:
+					EwData.app.screen.blit(self.surface, (self.x, self.y))
+					EwData.app.screen.blit(self.surface, (self.x, self.y-self.h))
+				elif _dir == 2:
+					EwData.app.screen.blit(self.surface, (self.x, self.y))
+					EwData.app.screen.blit(self.surface, (self.x+self.w, self.y))
+				elif _dir == 3:
+					EwData.app.screen.blit(self.surface, (self.x, self.y))
+					EwData.app.screen.blit(self.surface, (self.x-self.w, self.y))
+			else:
+				if _dir == 0:
+					destination_surface.blit(self.surface, (self.x, self.y))
+					destination_surface.blit(self.surface, (self.x, self.y+self.h))
+				elif _dir == 1:
+					destination_surface.blit(self.surface, (self.x, self.y))
+					destination_surface.blit(self.surface, (self.x, self.y-self.h))
+				elif _dir == 2:
+					destination_surface.blit(self.surface, (self.x, self.y))
+					destination_surface.blit(self.surface, (self.x+self.w, self.y))
+				elif _dir == 3:
+					destination_surface.blit(self.surface, (self.x, self.y))
+					destination_surface.blit(self.surface, (self.x-self.w, self.y))	
 		if self.scroll_direction() == 0 or self.scroll_direction() == "NORTH":
 			self.y -= self.scroll_speed
 			if self.y < self.y0_reset_point:
 				self.y = self.initial_y
-			destination_surface.blit(self.surface, (self.x, self.y))
-			destination_surface.blit(self.surface, (self.x, self.y+self.h))
-		if self.scroll_direction() == 1 or self.scroll_direction() == "SOUTH":
+			blit(0)
+		elif self.scroll_direction() == 1 or self.scroll_direction() == "SOUTH":
 			self.y += self.scroll_speed
 			if self.y > self.y1_reset_point:
 				self.y = self.initial_y
-			destination_surface.blit(self.surface, (self.x, self.y))
-			destination_surface.blit(self.surface, (self.x, self.y-self.h))
-		if self.scroll_direction() == 2 or self.scroll_direction() == "WEST":
+			blit(1)
+		elif self.scroll_direction() == 2 or self.scroll_direction() == "WEST":
 			self.x -= self.scroll_speed
 			if self.x < self.x2_reset_point:
 				self.x = self.initial_x
-			destination_surface.blit(self.surface, (self.x, self.y))
-			destination_surface.blit(self.surface, (self.x+self.w, self.y))
-		if self.scroll_direction() == 3 or self.scroll_direction() == "EAST":
+			blit(2)
+		elif self.scroll_direction() == 3 or self.scroll_direction() == "EAST":
 			self.x += self.scroll_speed
 			if self.x > self.x3_reset_point:
 				self.x = self.initial_x
-			destination_surface.blit(self.surface, (self.x, self.y))
-			destination_surface.blit(self.surface, (self.x-self.w, self.y))
+			blit(3)
 			
 	def get_scroll_direction(self):
 		return self.scroll_direction
@@ -667,8 +662,11 @@ class EwFont(EwObject):
 	def transform(self):
 		self.surface = pygame.transform.scale(self.surface, (self.w, self.h))
 		
-	def draw(self, destination_surface):
-		destination_surface.blit(self.surface, (self.x, self.y))
+	def draw(self, destination_surface=None):
+		if destination_surface is None:
+			EwData.app.screen.blit(self.surface, (self.x, self.y))
+		else:
+			destination_surface.blit(self.surface, (self.x, self.y))
 		
 	def get_text(self):
 		return self.text
@@ -697,7 +695,7 @@ class EwFont(EwObject):
 	def set_color(self, value):
 		self.color = value
 		
-def draw_mouse_coordinates(destination_surface, w=None, h=None, color=(255,0,0)):
+def draw_mouse_coordinates(destination_surface=None, w=None, h=None, color=(255,0,0)):
 	if w is None or h is None:
 		w = 64
 		h = 16
@@ -737,62 +735,54 @@ class EwShape(EwObject):
 	def set_thickness(self, value):
 		self.thickness = value
 		
+	def draw(self, destination_surface=None):
+		if destination_surface is None:
+			EwData.app.screen.blit(self.surface, (self.x, self.y), (0, 0, self.w, self.h))
+		else:
+			destination_surface.blit(self.surface, (self.x, self.y), (0, 0, self.w, self.h))
+		
 class EwRect(EwShape):
 	
 	def __init__(self, x, y, w, h, color=(255,255,255), alpha=255, thickness=1):
 		
 		EwShape.__init__(self, x, y, w, h, color, alpha, thickness)
 		pygame.draw.rect(self.surface, self.color, (0, 0, self.w, self.h), self.thickness)
-		
-	def draw(self, destination_surface):
-		destination_surface.blit(self.surface, (self.x, self.y), (0, 0, self.w, self.h))
-		
-	def draw_ellipse(self, destination_surface):
-		pygame.draw.ellipse(destination_surface, self.color, (self.x, self.y, self.w, self.h), self.thickness)
-		
+
 class EwPolygon(EwShape):
 	
-	def __init__(self, pointlist, color=(255,255,255), thickness=1):
+	def __init__(self, pointlist, color=(255,255,255), alpha=255, thickness=1):
 		
-		EwShape.__init__(self, None, None, None, None, color, thickness)
+		EwShape.__init__(self, None, None, None, None, color, alpha, thickness)
 		self.pointlist = pointlist
-		
-	def draw(self, destination_surface):
-		pygame.draw.polygon(destination_surface, self.color, self.pointlist, self.thickness)
+		pygame.draw.polygon(self.surface, self.color, self.pointlist, self.thickness)
 		
 class EwCircle(EwShape):
 	
-	def __init__(self, x, y, radius, color=(255,255,255), thickness=1):
+	def __init__(self, x, y, radius, color=(255,255,255), alpha=255, thickness=1):
 		
-		EwShape.__init__(self, x, y, radius*2, radius*2, color, thickness)
+		EwShape.__init__(self, x, y, radius*2, radius*2, color, alpha, thickness)
 		self.radius = radius
-		
-	def draw(self, destination_surface):
-		pygame.draw.circle(destination_surface, self.color, (self.x, self.y), self.radius, self.thickness)
-		
+		pygame.draw.circle(self.surface, self.color, (self.x, self.y), self.radius, self.thickness)
+
 	def get_radius(self):
 		return self.radius
 		
 class EwEllipse(EwRect):
 	
-	def __init__(self, x, y, w, h, color=(255,255,255), thickness=1):
+	def __init__(self, x, y, w, h, color=(255,255,255), alpha=255, thickness=1):
 		
-		EwRect.__init__(self, x, y, w, h, color, thickness)
-		
-	def draw(self, destination_surface):
-		pygame.draw.ellipse(destination_surface, self.color, (self.x, self.y, self.w, self.h), self.thickness)
-		
+		EwRect.__init__(self, x, y, w, h, color, alpha, thickness)
+		pygame.draw.ellipse(self.surface, self.color, (self.x, self.y, self.w, self.h), self.thickness)
+
 class EwArc(EwShape):
 	
-	def __init__(self, x, y, w, h, start_angle, stop_angle, color=(255,255,255), thickness=1):
+	def __init__(self, x, y, w, h, start_angle, stop_angle, color=(255,255,255), alpha=255, thickness=1):
 		
-		EwShape.__init__(self, x, y, w, h, color, thickness)
+		EwShape.__init__(self, x, y, w, h, color, alpha, thickness)
 		self.start_angle = start_angle
 		self.stop_angle = stop_angle
-		
-	def draw(self, destination_surface):
-		pygame.draw.arc(destination_surface, self.color, (self.x, self.y, self.w, self.h), self.start_angle, self.stop_angle, self.thickness)
-		
+		pygame.draw.arc(self.surface, self.color, (self.x, self.y, self.w, self.h), self.start_angle, self.stop_angle, self.thickness)
+
 	def get_start_angle(self):
 		return self.start_angle
 		
@@ -801,14 +791,12 @@ class EwArc(EwShape):
 
 class EwLine(EwShape):
 	
-	def __init__(self, start_pos, end_pos, color=(255,255,255), thickness=1):
+	def __init__(self, start_pos, end_pos, color=(255,255,255), alpha=255, thickness=1):
 	
-		EwShape.__init__(self, None, None, None, None, color, thickness)
+		EwShape.__init__(self, None, None, None, None, color, alpha, thickness)
 		self.start_pos = start_pos
 		self.end_pos = end_pos
-		
-	def draw(self, destination_surface):
-		pygame.draw.line(destination_surface, self.color, self.start_pos, self.end_pos, self.thickness)
+		pygame.draw.line(self.surface, self.color, self.start_pos, self.end_pos, self.thickness)
 		
 class EwLines:
 	
@@ -816,7 +804,7 @@ class EwLines:
 
 		self.lines = lines
 	
-	def draw(self, destination_surface):
+	def draw(self, destination_surface=None):
 		
 		if len(self.lines) > 0:
 			for line in self.lines:
@@ -830,6 +818,30 @@ class EwLines:
 		
 	def get_lines(self):
 		return self.lines
+		
+class EwGrid(EwObject):
+	
+	def __init__(self, x, y, w, h, color, alpha, thickness, size):
+		
+		EwObject.__init__(self, x, y, w, h)
+		self.color = color
+		self.alpha = alpha
+		self.thickness = thickness
+		self.size = size
+		self.x_positions = range(self.x, self.w, self.size)
+		self.y_positions = range(self.y, self.h, self.size)
+		[pygame.draw.line(self.surface, self.color, (z, self.y), (z, self.h), self.thickness) for z in self.x_positions]
+		[pygame.draw.line(self.surface, self.color, (self.x, z), (self.w, z), self.thickness) for z in self.y_positions]
+		
+	def draw(self, destination_surface=None):
+		if destination_surface is None:
+			EwData.app.screen.blit(self.surface, (self.x, self.y), (0, 0, self.w, self.h))
+		else:
+			destination_surface.blit(self.surface, (self.x, self.y), (0, 0, self.w, self.h))
+			
+	def snap_to_grid(self, target):
+		target.x = self.x_positions[bisect.bisect_left(self.x_positions, target.x)-1]
+		target.y = self.y_positions[bisect.bisect_left(self.y_positions, target.y)-1]
 
 # Screen Management
 # ======================================================== #
@@ -1078,7 +1090,6 @@ class EwRectMenu(EwRect):
 					return [b.press(mouse_pos, mouse_button, None) for b in self.buttons]
 				else:
 					return [b.press(mouse_pos, mouse_button, keys[self.buttons.index(b)]) for b in self.buttons]
-				
 		
 # Environment
 # ======================================================== #
