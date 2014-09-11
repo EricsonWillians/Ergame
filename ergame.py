@@ -506,26 +506,27 @@ class EwMouseCol:
 # Object Manipulation
 # ======================================================== #
 
-class EwDrawable:
+class EwDrawable(EwMovable, EwResizable):
 	
-	def __init__(self):
+	def __init__(self, x, y, w, h):
 		
-		pass
+		EwMovable.__init__(self, x, y)
+		EwResizable.__init__(self, w, h)
+		self.surface = pygame.Surface((w, h))
+		
+	def __call__(self):
+		return (self.x, self.y, self.w, self.h)
 		
 	def draw(self, destination_surface):
 		pass
 
-class EwObject(EwDrawable, EwData, EwMovable, EwResizable):
+class EwObject(EwDrawable, EwData):
 	
 	def __init__(self, x, y, w, h):
 		
-		EwData.__init__(self)
-		EwMovable.__init__(self, x, y)
-		EwResizable.__init__(self, w, h)
+		EwDrawable.__init__(self, x, y, w, h)
+		EwData.__init__(self)		
 		self.has_focus = False
-		
-	def __call__(self):
-		return (self.x, self.y, self.w, self.h)
 		
 	def get_app(self):
 		if EwData.app is not None:
@@ -547,28 +548,28 @@ class EwImage(EwObject):
 		self.alpha = alpha
 		
 		if ".png" not in self.filename:
-			self.image = pygame.image.load(os.path.join(GRAPHICS_PATH, filename)).convert()
+			self.surface = pygame.image.load(os.path.join(GRAPHICS_PATH, filename)).convert()
 		else:
-			self.image = pygame.image.load(os.path.join(GRAPHICS_PATH, filename)).convert_alpha()
+			self.surface = pygame.image.load(os.path.join(GRAPHICS_PATH, filename)).convert_alpha()
 		
-		self.image.fill((255, 255, 255, self.alpha), None, pygame.BLEND_RGBA_MULT)
+		self.surface.fill((255, 255, 255, self.alpha), None, pygame.BLEND_RGBA_MULT)
 		self.transform()
 			
 	def transform(self):
-		self.image = pygame.transform.scale(self.image, (self.w, self.h))
+		self.surface = pygame.transform.scale(self.surface, (self.w, self.h))
 		
 	def transform_freely(self, w, h):
-		self.image = pygame.transform.scale(self.image, (w, h))
+		self.surface = pygame.transform.scale(self.surface, (w, h))
 		
 	def fade_in(self, speed, limit=255):
 		if (self.alpha < limit) and (self.alpha < 255):
 			self.alpha += speed
-			self.image.fill((255, 255, 255, self.alpha), None, pygame.BLEND_RGBA_MULT)
+			self.surface.fill((255, 255, 255, self.alpha), None, pygame.BLEND_RGBA_MULT)
 		
 	def fade_out(self, speed, limit=0):
 		if (self.alpha > limit) and (self.alpha > 0):
 			self.alpha -= speed
-			self.image.fill((255, 255, 255, self.alpha), None, pygame.BLEND_RGBA_MULT)
+			self.surface.fill((255, 255, 255, self.alpha), None, pygame.BLEND_RGBA_MULT)
 			
 	def is_faded_in(self, value=255):
 		if self.alpha >= value:
@@ -583,7 +584,7 @@ class EwImage(EwObject):
 			return False 
 			
 	def draw(self, destination_surface):
-		destination_surface.blit(self.image, (self.x, self.y))
+		destination_surface.blit(self.surface, (self.x, self.y))
 		
 class EwScrollingImage(EwImage):
 	
@@ -609,26 +610,26 @@ class EwScrollingImage(EwImage):
 			self.y -= self.scroll_speed
 			if self.y < self.y0_reset_point:
 				self.y = self.initial_y
-			destination_surface.blit(self.image, (self.x, self.y))
-			destination_surface.blit(self.image, (self.x, self.y+self.h))
+			destination_surface.blit(self.surface, (self.x, self.y))
+			destination_surface.blit(self.surface, (self.x, self.y+self.h))
 		if self.scroll_direction() == 1 or self.scroll_direction() == "SOUTH":
 			self.y += self.scroll_speed
 			if self.y > self.y1_reset_point:
 				self.y = self.initial_y
-			destination_surface.blit(self.image, (self.x, self.y))
-			destination_surface.blit(self.image, (self.x, self.y-self.h))
+			destination_surface.blit(self.surface, (self.x, self.y))
+			destination_surface.blit(self.surface, (self.x, self.y-self.h))
 		if self.scroll_direction() == 2 or self.scroll_direction() == "WEST":
 			self.x -= self.scroll_speed
 			if self.x < self.x2_reset_point:
 				self.x = self.initial_x
-			destination_surface.blit(self.image, (self.x, self.y))
-			destination_surface.blit(self.image, (self.x+self.w, self.y))
+			destination_surface.blit(self.surface, (self.x, self.y))
+			destination_surface.blit(self.surface, (self.x+self.w, self.y))
 		if self.scroll_direction() == 3 or self.scroll_direction() == "EAST":
 			self.x += self.scroll_speed
 			if self.x > self.x3_reset_point:
 				self.x = self.initial_x
-			destination_surface.blit(self.image, (self.x, self.y))
-			destination_surface.blit(self.image, (self.x-self.w, self.y))
+			destination_surface.blit(self.surface, (self.x, self.y))
+			destination_surface.blit(self.surface, (self.x-self.w, self.y))
 			
 	def get_scroll_direction(self):
 		return self.scroll_direction
@@ -660,31 +661,31 @@ class EwFont(EwObject):
 			self.font = pygame.font.Font(None, self.w+self.h)
 		if bold:
 			self.font.set_bold(True)
-		self.image = self.font.render(self.text, 1, self.color)
+		self.surface = self.font.render(self.text, 1, self.color)
 		self.transform()
 		
 	def transform(self):
-		self.image = pygame.transform.scale(self.image, (self.w, self.h))
+		self.surface = pygame.transform.scale(self.surface, (self.w, self.h))
 		
 	def draw(self, destination_surface):
-		destination_surface.blit(self.image, (self.x, self.y))
+		destination_surface.blit(self.surface, (self.x, self.y))
 		
 	def get_text(self):
 		return self.text
 	
 	def update(self, value):
 		self.text = value
-		self.image = self.font.render(self.text, 1, self.color)
+		self.surface = self.font.render(self.text, 1, self.color)
 		self.transform()
 		
 	def update_color(self, color):
 		self.color = color
-		self.image = self.font.render(self.text, 1, self.color)
+		self.surface = self.font.render(self.text, 1, self.color)
 		self.transform()
 	
 	def __call__(self, value):
 		self.text = value
-		self.image = self.font.render(self.text, 1, self.color)
+		self.surface = self.font.render(self.text, 1, self.color)
 		self.transform()
 	
 	def set_text(self, value):
@@ -705,21 +706,30 @@ def draw_mouse_coordinates(destination_surface, w=None, h=None, color=(255,0,0))
 
 class EwShape(EwObject):
 	
-	def __init__(self, x, y, w, h, color, thickness):
+	def __init__(self, x, y, w, h, color, alpha, thickness):
 		
 		EwObject.__init__(self, x, y, w, h)
 		
 		self.color = color
+		self.alpha = alpha
 		self.thickness = thickness
+		pygame.Surface.convert_alpha(self.surface)
+		self.surface.set_alpha(self.alpha)
 		
 	def __call__(self):
-		return (self.x, self.y, self.w, self.h, self.color, self.thickness)
+		return (self.x, self.y, self.w, self.h, self.color, self.alpha, self.thickness)
 		
 	def get_color(self):
 		return self.color
 		
 	def set_color(self, value):
 		self.color = value
+		
+	def get_alpha(self):
+		return self.alpha
+		
+	def set_alpha(self, value):
+		self.alpha = value
 		
 	def get_thickness(self):
 		return self.thickness
@@ -729,12 +739,13 @@ class EwShape(EwObject):
 		
 class EwRect(EwShape):
 	
-	def __init__(self, x, y, w, h, color=(255,255,255), thickness=1):
+	def __init__(self, x, y, w, h, color=(255,255,255), alpha=255, thickness=1):
 		
-		EwShape.__init__(self, x, y, w, h, color, thickness)
+		EwShape.__init__(self, x, y, w, h, color, alpha, thickness)
+		pygame.draw.rect(self.surface, self.color, (0, 0, self.w, self.h), self.thickness)
 		
 	def draw(self, destination_surface):
-		pygame.draw.rect(destination_surface, self.color, (self.x, self.y, self.w, self.h), self.thickness)
+		destination_surface.blit(self.surface, (self.x, self.y), (0, 0, self.w, self.h))
 		
 	def draw_ellipse(self, destination_surface):
 		pygame.draw.ellipse(destination_surface, self.color, (self.x, self.y, self.w, self.h), self.thickness)
@@ -916,6 +927,9 @@ class EwInput(EwRect):
 			else:
 				raise NotMemberOfError("EwCarret")
 
+	def __call__(self):
+		return "".join(self.message)
+
 	def update_message(self, destination_surface):
 		if self.has_focus:
 			if (len(self.message) < self.char_limit):
@@ -1077,6 +1091,27 @@ class EwEnvironment(EwData):
 
 # Game-Specific
 # ======================================================== #
+
+class EwCamera(EwObject):
+	
+	def __init__(self, x, y, w, h):
+		
+		EwObject.__init__(self, x, y, w, h)
+
+class EwWorld(EwData):
+	
+	def __init__(self, w, h, cam=None):
+		
+		EwData.__init__(self)
+		self.w = w
+		self.h = h
+		if cam is None:
+			self.cam = EwCamera(0, 0, self.w/2, self.h/2)
+		else:
+			if isinstance(cam, EwCamera):
+				self.cam = cam
+			else:
+				raise NotMemberOfError("EwCamera")
 
 class HealthBar(EwRect):
 		
