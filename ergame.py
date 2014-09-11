@@ -1034,7 +1034,7 @@ class EwRectButton(EwAbstractButton, EwRect):
 		self.backup_color = color
 		self.font_backup_color = self.font.color
 		
-	def draw(self, destination_surface):
+	def draw(self, destination_surface=None):
 		self.rd(self, destination_surface)
 		self.font.draw(destination_surface)
 		
@@ -1057,7 +1057,7 @@ class EwRectMenu(EwRect):
 		EwRect.__init__(self, x, y, w, self.height_of_each_button*len(self.buttons), color, thickness)
 		self.rd = EwRect.draw
 		
-	def draw(self, destination_surface):
+	def draw(self, destination_surface=None):
 		self.rd(self, destination_surface)
 		[button.draw(destination_surface) for button in self.buttons]
 		
