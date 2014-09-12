@@ -479,13 +479,44 @@ class EwDrawable(EwMovable, EwResizable):
 		EwMovable.__init__(self, x, y)
 		EwResizable.__init__(self, w, h)
 		self.surface = pygame.Surface((w, h))
+		self.surface.set_colorkey(self.surface.get_at((0,0)), pygame.RLEACCEL)
 		
 	def __call__(self):
 		return self.surface
 		
 	def draw(self, destination_surface):
 		pass
-
+		
+class EwRotatable(EwDrawable):
+	
+	def __init__(self, x, y, w, h):
+		
+		EwDrawable.__init__(self, x, y, w, h)
+		self.rot_surfaces = None
+		self.manager = 0
+	
+	def create_rotations(self, start_angle=0, final_angle=360, step=10):
+		def rot(angle):
+			orig_rect = self.surface.get_rect()
+			rot_image = pygame.transform.rotate(self.surface, angle)
+			rot_rect = orig_rect.copy()
+			rot_rect.center = rot_image.get_rect().center
+			rot_image = rot_image.subsurface(rot_rect).copy()
+			return rot_image
+		self.rot_surfaces = [rot(n) for n in range(start_angle, final_angle, step)]
+	
+	def rotate(self, direction=1):
+		if self.rot_surfaces is not None:
+			self.surface = self.rot_surfaces[self.manager]
+			if direction == 0:
+				self.manager += 1
+				if self.manager > len(self.rot_surfaces)-1:
+					self.manager = 0
+			elif direction == 1:
+				self.manager -= 1
+				if self.manager < -(len(self.rot_surfaces)-1):
+					self.manager = 0
+			
 class EwObject(EwDrawable, EwData):
 	
 	def __init__(self, x, y, w, h):
@@ -505,8 +536,8 @@ class EwObject(EwDrawable, EwData):
 		if EwMouseCol(pygame.mouse.get_pos(), self)() and pygame.mouse.get_pressed()[0]:
 			self.has_focus = True
 		if EwMouseCol(pygame.mouse.get_pos(), self)() and pygame.mouse.get_pressed()[2]:
-			self.has_focus = False		
-
+			self.has_focus = False
+			
 class EwImage(EwObject):
 	
 	def __init__(self, x, y, w, h, filename, alpha=255):
@@ -746,7 +777,15 @@ class EwRect(EwShape):
 	def __init__(self, x, y, w, h, color=(255,255,255), alpha=255, thickness=1):
 		
 		EwShape.__init__(self, x, y, w, h, color, alpha, thickness)
-		pygame.draw.rect(self.surface, self.color, (0, 0, self.w, self.h), self.thickness)
+		pygame.draw.rect(self.surface, self.color, (x, y, w, h), self.thickness)
+		
+class EwRotatableRect(EwShape, EwRotatable):
+	
+	def __init__(self, x, y, w, h, color=(255,255,255), alpha=255, thickness=1):
+		
+		EwShape.__init__(self, x, y, w, h, color, alpha, thickness)
+		EwRotatable.__init__(self, x, y, w, h)
+		pygame.draw.rect(self.surface, self.color, ((self.w/2)-(self.w/1.4)/2, (self.h/2)-(self.h/1.4)/2, self.w/1.4, self.h/1.4), self.thickness)
 
 class EwPolygon(EwShape):
 	
