@@ -1,3 +1,5 @@
+### WARNING: The engine is going through critical updates, and the examples on the wiki might not work. I'm getting closer and closer to a stable release, and I'll update the entire wiki when I get there. 
+
 Ergame
 ======
 The encapsulated and object-oriented solution for Game Development with Python.
