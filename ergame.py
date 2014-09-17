@@ -72,6 +72,12 @@ class MoreKeysThanButtonsError(ErgameError):
 	def __init__(self, difference):
 		
 		ErgameError.__init__(self, "You've given more keys than there are available buttons. {}, precisely. What's on your mind?".format(difference))
+		
+class UnknownPatternError(ErgameError):
+	
+	def __init__(self, _pattern):
+		
+		ErgameError.__init__(self, "The given pattern does not match the following: {}".format(_pattern))
 
 # CFG
 # ======================================================== #
@@ -248,45 +254,20 @@ class EwApp(EwRunnable, EwData):
 # POSITIONS AND DIMENSIONS
 # ======================================================== #
 		
-class EwPos:
+class EwPos(EwData):
 	
 	def __init__(self, x, y):
 		
-		self.x = x
-		self.y = y
+		EwData.__init__(self)
+		self["x"] = x
+		self["y"] = y
 		
-	def __getitem__(self, key):
-		
-		if key == "x":
-			return self.x
-		elif key == "y":
-			return self.y
-		elif key == "(xy)":
-			return (self.x, self.y)
-		elif key == "[xy]":
-			return [self.x, self.y]
-		
-	def __setitem__(self, key, value):
-		
-		if key == "x":
-			self.x = value
-		elif key == "y":
-			self.y = value
-		
-	def __call__(self):
-		return (self.x, self.y)
-		
-	def get_x(self):
-		return self.x
-		
-	def set_x(self, value):
-		self.x = value
-		
-	def get_y(self):
-		return self.y
-
-	def set_y(self, value):
-		self.y = value
+	def set_pos(self, value):
+		if isinstance(value, tuple):
+			self["x"] = value[0]
+			self["y"] = value[1]
+		else:
+			raise NotMemberOfError("tuple")
 
 class EwDirection:
 	
@@ -336,13 +317,14 @@ class EwMovable(EwPos):
 			direction = EwDirection(direction)
 		if condition:
 			if direction() == 0 or direction() == "NORTH":
-				self.y -= step
+				self["y"] -= step
 			if direction() == 1 or direction() == "SOUTH":
-				self.y += step
+				self["y"] += step
 			if direction() == 2 or direction() == "WEST":
-				self.x -= step
+				self["x"] -= step
 			if direction() == 3 or direction() == "EAST":
-				self.x += step
+				self["x"] += step
+			return True
 	
 	def setup_movement(self, movement_type, step_pattern):
 		key = pygame.key.get_pressed
@@ -372,8 +354,8 @@ class EwMovable(EwPos):
 		
 	def teleport(self, condition, new_x, new_y):
 		if condition:
-			self.x = new_x
-			self.y = new_y
+			self["x"] = new_x
+			self["y"] = new_y
 		
 	def get_direction(self):
 		return self.direction
@@ -387,42 +369,13 @@ class EwMovable(EwPos):
 	def set_step(self, value):
 		self.step = value
 			
-class EwResizable:
+class EwResizable(EwMovable):
 	
-	def __init__(self, w, h):
+	def __init__(self, x, y, w, h):
 		
-		self.w = w
-		self.h = h
-		
-	def __getitem__(self, key):
-		
-		if key == "w":
-			return self.w
-		elif key == "h":
-			return self.h
-		elif key == "(wh)":
-			return (self.w, self.h)
-		elif key == "[wh]":
-			return [self.w, self.h]
-		
-	def __setitem__(self, key, value):
-		
-		if key == "w":
-			self.w = value
-		elif key == "h":
-			self.h = value
-		
-	def get_w(self):
-		return self.w
-		
-	def set_w(self, value):
-		self.w = value
-		
-	def get_h(self):
-		return self.h
-		
-	def set_h(self, value):
-		self.h = value
+		EwMovable.__init__(self, x, y)
+		self["w"] = w
+		self["h"] = h
 
 # Collision Detection
 # ======================================================== #
@@ -433,14 +386,14 @@ class EwCol:
 		
 		self.o = o
 		self.oo = oo
-		self.ox = self.o.x
-		self.oy = self.o.y
-		self.ow = self.o.w
-		self.oh = self.o.h
-		self.oox = self.oo.x
-		self.ooy = self.oo.y
-		self.oow = self.oo.w
-		self.ooh = self.oo.h
+		self.ox = self.o["x"]
+		self.oy = self.o["y"]
+		self.ow = self.o["w"]
+		self.oh = self.o["h"]
+		self.oox = self.oo["x"]
+		self.ooy = self.oo["y"]
+		self.oow = self.oo["w"]
+		self.ooh = self.oo["h"]
 		
 	def __call__(self):
 		
@@ -457,10 +410,10 @@ class EwMouseCol:
 		self.oo = oo
 		self.ox = self.o[0]
 		self.oy = self.o[1]
-		self.oox = self.oo.x
-		self.ooy = self.oo.y
-		self.oow = self.oo.w
-		self.ooh = self.oo.h
+		self.oox = self.oo["x"]
+		self.ooy = self.oo["y"]
+		self.oow = self.oo["w"]
+		self.ooh = self.oo["h"]
 		
 	def __call__(self):
 		
@@ -472,12 +425,11 @@ class EwMouseCol:
 # Object Manipulation
 # ======================================================== #
 
-class EwDrawable(EwMovable, EwResizable):
+class EwDrawable(EwResizable):
 	
 	def __init__(self, x, y, w, h):
 		
-		EwMovable.__init__(self, x, y)
-		EwResizable.__init__(self, w, h)
+		EwResizable.__init__(self, x, y, w, h)
 		self.surface = pygame.Surface((w, h))
 		self.surface.set_colorkey(self.surface.get_at((0,0)), pygame.RLEACCEL)
 		
@@ -517,16 +469,15 @@ class EwRotatable(EwDrawable):
 				if self.manager < -(len(self.rot_surfaces)-1):
 					self.manager = 0
 			
-class EwObject(EwDrawable, EwData):
+class EwObject(EwDrawable):
 	
 	def __init__(self, x, y, w, h):
-		
+
 		EwDrawable.__init__(self, x, y, w, h)
-		EwData.__init__(self)		
 		self.has_focus = False
 		
 	def get(self):
-		return (self.x, self.y, self.w, self.h)
+		return (self["x"], self["y"], self["w"], self["h"])
 		
 	def get_app(self):
 		if EwData.app is not None:
@@ -556,7 +507,7 @@ class EwImage(EwObject):
 		self.transform()
 			
 	def transform(self):
-		self.surface = pygame.transform.scale(self.surface, (self.w, self.h))
+		self.surface = pygame.transform.scale(self.surface, (self["w"], self["h"]))
 		
 	def transform_freely(self, w, h):
 		self.surface = pygame.transform.scale(self.surface, (w, h))
@@ -585,9 +536,9 @@ class EwImage(EwObject):
 			
 	def draw(self, destination_surface=None):
 		if destination_surface is None:
-			EwData.app.screen.blit(self.surface, (self.x, self.y))
+			EwData.app.screen.blit(self.surface, (self["x"], self["y"]))
 		else:
-			destination_surface.blit(self.surface, (self.x, self.y))
+			destination_surface.blit(self.surface, (self["x"], self["y"]))
 		
 class EwScrollingImage(EwImage):
 	
@@ -601,60 +552,60 @@ class EwScrollingImage(EwImage):
 			raise NotMemberOfError("EwDirection")
 		self.scroll_speed = scroll_speed
 		self.default_scroll_speed = self.scroll_speed
-		self.initial_y = self.y
-		self.y0_reset_point = self.initial_y - self.h
-		self.y1_reset_point = self.initial_y + self.h
-		self.initial_x = self.x
-		self.x2_reset_point = self.initial_x - self.w
-		self.x3_reset_point = self.initial_x + self.w
+		self.initial_y = self["y"]
+		self.y0_reset_point = self.initial_y - self["h"]
+		self.y1_reset_point = self.initial_y + self["h"]
+		self.initial_x = self["x"]
+		self.x2_reset_point = self.initial_x - self["w"]
+		self.x3_reset_point = self.initial_x + self["w"]
 		
 	def draw(self, destination_surface=None):
 		def blit(_dir):
 			if destination_surface is None:
 				if _dir == 0:
-					EwData.app.screen.blit(self.surface, (self.x, self.y))
-					EwData.app.screen.blit(self.surface, (self.x, self.y+self.h))
+					EwData.app.screen.blit(self.surface, (self["x"], self["y"]))
+					EwData.app.screen.blit(self.surface, (self["x"], self["y"]+self["h"]))
 				elif _dir == 1:
-					EwData.app.screen.blit(self.surface, (self.x, self.y))
-					EwData.app.screen.blit(self.surface, (self.x, self.y-self.h))
+					EwData.app.screen.blit(self.surface, (self["x"], self["y"]))
+					EwData.app.screen.blit(self.surface, (self["x"], self["y"]-self["h"]))
 				elif _dir == 2:
-					EwData.app.screen.blit(self.surface, (self.x, self.y))
-					EwData.app.screen.blit(self.surface, (self.x+self.w, self.y))
+					EwData.app.screen.blit(self.surface, (self["x"], self["y"]))
+					EwData.app.screen.blit(self.surface, (self["x"]+self["w"], self["y"]))
 				elif _dir == 3:
-					EwData.app.screen.blit(self.surface, (self.x, self.y))
-					EwData.app.screen.blit(self.surface, (self.x-self.w, self.y))
+					EwData.app.screen.blit(self.surface, (self["x"], self["y"]))
+					EwData.app.screen.blit(self.surface, (self["x"]-self["w"], self["y"]))
 			else:
 				if _dir == 0:
-					destination_surface.blit(self.surface, (self.x, self.y))
-					destination_surface.blit(self.surface, (self.x, self.y+self.h))
+					destination_surface.blit(self.surface, (self["x"], self["y"]))
+					destination_surface.blit(self.surface, (self["x"], self["y"]+self["h"]))
 				elif _dir == 1:
-					destination_surface.blit(self.surface, (self.x, self.y))
-					destination_surface.blit(self.surface, (self.x, self.y-self.h))
+					destination_surface.blit(self.surface, (self["x"], self["y"]))
+					destination_surface.blit(self.surface, (self["x"], self["y"]-self["h"]))
 				elif _dir == 2:
-					destination_surface.blit(self.surface, (self.x, self.y))
-					destination_surface.blit(self.surface, (self.x+self.w, self.y))
+					destination_surface.blit(self.surface, (self["x"], self["y"]))
+					destination_surface.blit(self.surface, (self["x"]+self["w"], self["y"]))
 				elif _dir == 3:
-					destination_surface.blit(self.surface, (self.x, self.y))
-					destination_surface.blit(self.surface, (self.x-self.w, self.y))	
+					destination_surface.blit(self.surface, (self["x"], self["y"]))
+					destination_surface.blit(self.surface, (self["x"]-self["w"], self["y"]))	
 		if self.scroll_direction() == 0 or self.scroll_direction() == "NORTH":
-			self.y -= self.scroll_speed
-			if self.y < self.y0_reset_point:
-				self.y = self.initial_y
+			self["y"] -= self.scroll_speed
+			if self["y"] < self.y0_reset_point:
+				self["y"] = self.initial_y
 			blit(0)
 		elif self.scroll_direction() == 1 or self.scroll_direction() == "SOUTH":
-			self.y += self.scroll_speed
-			if self.y > self.y1_reset_point:
-				self.y = self.initial_y
+			self["y"] += self.scroll_speed
+			if self["y"] > self.y1_reset_point:
+				self["y"] = self.initial_y
 			blit(1)
 		elif self.scroll_direction() == 2 or self.scroll_direction() == "WEST":
-			self.x -= self.scroll_speed
-			if self.x < self.x2_reset_point:
-				self.x = self.initial_x
+			self["x"] -= self.scroll_speed
+			if self["x"] < self.x2_reset_point:
+				self["x"] = self.initial_x
 			blit(2)
 		elif self.scroll_direction() == 3 or self.scroll_direction() == "EAST":
-			self.x += self.scroll_speed
-			if self.x > self.x3_reset_point:
-				self.x = self.initial_x
+			self["x"] += self.scroll_speed
+			if self["x"] > self.x3_reset_point:
+				self["x"] = self.initial_x
 			blit(3)
 			
 	def get_scroll_direction(self):
@@ -682,22 +633,22 @@ class EwFont(EwObject):
 		self.text = text
 		self.color = color
 		if self.filename is not None:
-			self.font = pygame.font.Font(os.path.join(GRAPHICS_PATH, filename), self.w+self.h*2)
+			self.font = pygame.font.Font(os.path.join(GRAPHICS_PATH, filename), self["w"]+self["h"]*2)
 		else:
-			self.font = pygame.font.Font(None, self.w+self.h)
+			self.font = pygame.font.Font(None, self["w"]+self["h"])
 		if bold:
 			self.font.set_bold(True)
 		self.surface = self.font.render(self.text, 1, self.color)
 		self.transform()
 		
 	def transform(self):
-		self.surface = pygame.transform.scale(self.surface, (self.w, self.h))
+		self.surface = pygame.transform.scale(self.surface, (self["w"], self["h"]))
 		
 	def draw(self, destination_surface=None):
 		if destination_surface is None:
-			EwData.app.screen.blit(self.surface, (self.x, self.y))
+			EwData.app.screen.blit(self.surface, (self["x"], self["y"]))
 		else:
-			destination_surface.blit(self.surface, (self.x, self.y))
+			destination_surface.blit(self.surface, (self["x"], self["y"]))
 		
 	def get_text(self):
 		return self.text
@@ -746,7 +697,7 @@ class EwShape(EwObject):
 		self.surface.set_alpha(self.alpha)
 		
 	def __call__(self):
-		return (self.x, self.y, self.w, self.h, self.color, self.alpha, self.thickness)
+		return (self["x"], self["y"], self["w"], self["h"], self.color, self.alpha, self.thickness)
 		
 	def get_color(self):
 		return self.color
@@ -768,9 +719,9 @@ class EwShape(EwObject):
 		
 	def draw(self, destination_surface=None):
 		if destination_surface is None:
-			EwData.app.screen.blit(self.surface, (self.x, self.y), (0, 0, self.w, self.h))
+			EwData.app.screen.blit(self.surface, (self["x"], self["y"]), (0, 0, self["w"], self["h"]))
 		else:
-			destination_surface.blit(self.surface, (self.x, self.y), (0, 0, self.w, self.h))
+			destination_surface.blit(self.surface, (self["x"], self["y"]), (0, 0, self["w"], self["h"]))
 		
 class EwRect(EwShape):
 	
@@ -785,7 +736,7 @@ class EwRotatableRect(EwShape, EwRotatable):
 		
 		EwShape.__init__(self, x, y, w, h, color, alpha, thickness)
 		EwRotatable.__init__(self, x, y, w, h)
-		pygame.draw.rect(self.surface, self.color, ((self.w/2)-(self.w/1.4)/2, (self.h/2)-(self.h/1.4)/2, self.w/1.4, self.h/1.4), self.thickness)
+		pygame.draw.rect(self.surface, self.color, ((self["w"]/2)-(self["w"]/1.4)/2, (self["h"]/2)-(self["h"]/1.4)/2, self["w"]/1.4, self["h"]/1.4), self.thickness)
 
 class EwPolygon(EwShape):
 	
@@ -801,7 +752,7 @@ class EwCircle(EwShape):
 		
 		EwShape.__init__(self, x, y, radius*2, radius*2, color, alpha, thickness)
 		self.radius = radius
-		pygame.draw.circle(self.surface, self.color, (self.x, self.y), self.radius, self.thickness)
+		pygame.draw.circle(self.surface, self.color, (self["x"], self["y"]), self.radius, self.thickness)
 
 	def get_radius(self):
 		return self.radius
@@ -811,7 +762,7 @@ class EwEllipse(EwRect):
 	def __init__(self, x, y, w, h, color=(255,255,255), alpha=255, thickness=1):
 		
 		EwRect.__init__(self, x, y, w, h, color, alpha, thickness)
-		pygame.draw.ellipse(self.surface, self.color, (self.x, self.y, self.w, self.h), self.thickness)
+		pygame.draw.ellipse(self.surface, self.color, (self["x"], self["y"], self["w"], self["h"]), self.thickness)
 
 class EwArc(EwShape):
 	
@@ -820,7 +771,7 @@ class EwArc(EwShape):
 		EwShape.__init__(self, x, y, w, h, color, alpha, thickness)
 		self.start_angle = start_angle
 		self.stop_angle = stop_angle
-		pygame.draw.arc(self.surface, self.color, (self.x, self.y, self.w, self.h), self.start_angle, self.stop_angle, self.thickness)
+		pygame.draw.arc(self.surface, self.color, (self["x"], self["y"], self["w"], self["h"]), self.start_angle, self.stop_angle, self.thickness)
 
 	def get_start_angle(self):
 		return self.start_angle
@@ -868,16 +819,16 @@ class EwGrid(EwObject):
 		self.thickness = thickness
 		self.cell_width = cell_width
 		self.cell_height = cell_height
-		self.rows = range(self.x, self.w, self.cell_width)
-		self.columns = range(self.y, self.h, self.cell_height)
-		[pygame.draw.line(self.surface, self.color, (z, self.y), (z, self.h), self.thickness) for z in self.rows]
-		[pygame.draw.line(self.surface, self.color, (self.x, z), (self.w, z), self.thickness) for z in self.columns]
+		self.rows = range(self["x"], self["w"], self.cell_width)
+		self.columns = range(self["y"], self["h"], self.cell_height)
+		[pygame.draw.line(self.surface, self.color, (z, self["y"]), (z, self["h"]), self.thickness) for z in self.rows]
+		[pygame.draw.line(self.surface, self.color, (self["x"], z), (self["w"], z), self.thickness) for z in self.columns]
 		
 	def draw(self, destination_surface=None):
 		if destination_surface is None:
-			EwData.app.screen.blit(self.surface, (self.x, self.y), (0, 0, self.w, self.h))
+			EwData.app.screen.blit(self.surface, (self["x"], self["y"]), (0, 0, self["w"], self["h"]))
 		else:
-			destination_surface.blit(self.surface, (self.x, self.y), (0, 0, self.w, self.h))
+			destination_surface.blit(self.surface, (self["x"], self["y"]), (0, 0, self["w"], self["h"]))
 			
 	def get_rows(self):
 		return self.rows
@@ -887,11 +838,41 @@ class EwGrid(EwObject):
 		
 	def get_cells(self):
 		return [(x, y) for x in self.rows for y in self.columns]
-			
+		
+	def get_pos(self, target_pos):
+		return (self.rows[target_pos[0]], self.columns[target_pos[1]])
+		
 	def snap_to_grid(self, target):
-		target.x = self.x_positions[bisect.bisect_left(self.rows, target.x)-1]
-		target.y = self.y_positions[bisect.bisect_left(self.columns, target.y)-1]
-
+		target["x"] = self.rows[bisect.bisect_left(self.rows, target["x"])-1]
+		target["y"] = self.columns[bisect.bisect_left(self.columns, target["y"])-1]
+		
+	def navigate(self, target, condition, direction=0, step=1):
+		if isinstance(direction, EwDirection):
+			self.direction = direction
+		else:
+			direction = EwDirection(direction)
+		if condition:
+			if direction() == 0 or direction() == "NORTH":
+				bi = bisect.bisect_left(self.columns, target["y"])-step
+				if bi > -1:
+					target["y"] -= step
+					target["y"] = self.columns[bi]
+			if direction() == 1 or direction() == "SOUTH":
+				bi = bisect.bisect_left(self.columns, target["y"])+step
+				if bi < len(self.columns):
+					target["y"] += step
+					target["y"] = self.columns[bi]
+			if direction() == 2 or direction() == "WEST":
+				bi = bisect.bisect_left(self.rows, target["x"])-step
+				if bi > -1:
+					target["x"] -= step
+					target["x"] = self.rows[bi]
+			if direction() == 3 or direction() == "EAST":
+				bi = bisect.bisect_left(self.rows, target["x"])+step
+				if bi < len(self.rows):
+					target["x"] += step
+					target["x"] = self.rows[bi]
+			
 # Screen Management
 # ======================================================== #
 
@@ -976,12 +957,12 @@ class EwInput(EwRect):
 		self.label_font = EwFont(x, y, w/3, h, font_filename, self.label, font_color, bold)
 		EwRect.__init__(self, x, y, w, h)
 		self.rd = EwRect.draw
-		self.font = EwFont((x + self.label_font.w) + 2, y, w/12, h, font_filename, "", font_color, bold)
+		self.font = EwFont((x + self.label_font["w"]) + 2, y, w/12, h, font_filename, "", font_color, bold)
 		self.last_key = None
 		self.char_limit = char_limit
 		self.message = []
 		if carret is None:
-			self.carret = EwCarret(self.font.x+(self.w/16)+10, y, w/16, h, carret_color , 0, 40)
+			self.carret = EwCarret(self.font["x"]+(self["w"]/16)+10, y, w/16, h, carret_color , 0, 40)
 		else:
 			if isinstance(carret, EwCarret):
 				self.carret = carret
@@ -1002,18 +983,18 @@ class EwInput(EwRect):
 								self.message.append(pygame.key.name(int(self.last_key)).upper())
 							else:
 								self.message.append(pygame.key.name(int(self.last_key)))
-							self.font.w += self.w / 16
-							self.carret.x += self.w / 16
+							self.font["w"] += self["w"] / 16
+							self.carret["x"] += self["w"] / 16
 				if pygame.key.get_pressed()[pygame.K_SPACE]:
 					if EwData.app.check_if_time_has_elapsed_in_milliseconds(250):
 						self.message.append(" ")
-						self.font.w += self.w / 16
-						self.carret.x += self.w / 16
+						self.font["w"] += self["w"] / 16
+						self.carret["x"] += self["w"] / 16
 			if pygame.key.get_pressed()[pygame.K_BACKSPACE]:
 				if len(self.message) > 0:
 					if EwData.app.check_if_time_has_elapsed_in_milliseconds(180):
-						self.font.w -= self.w / 16
-						self.carret.x -= self.w / 16
+						self.font["w"] -= self["w"] / 16
+						self.carret["x"] -= self["w"] / 16
 						self.message.pop()
 			else:
 				self.carret.draw(destination_surface)
@@ -1163,10 +1144,10 @@ class EwWorld(EwData):
 	def __init__(self, w, h, cam=None):
 		
 		EwData.__init__(self)
-		self.w = w
-		self.h = h
+		self["w"] = w
+		self["h"] = h
 		if cam is None:
-			self.cam = EwCamera(0, 0, self.w/2, self.h/2)
+			self.cam = EwCamera(0, 0, self["w"]/2, self["h"]/2)
 		else:
 			if isinstance(cam, EwCamera):
 				self.cam = cam
