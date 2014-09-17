@@ -860,17 +860,18 @@ class EwLines:
 		
 class EwGrid(EwObject):
 	
-	def __init__(self, x, y, w, h, color, alpha, thickness, size):
+	def __init__(self, x, y, w, h, color, alpha, thickness, cell_width, cell_height):
 		
 		EwObject.__init__(self, x, y, w, h)
 		self.color = color
 		self.alpha = alpha
 		self.thickness = thickness
-		self.size = size
-		self.x_positions = range(self.x, self.w, self.size)
-		self.y_positions = range(self.y, self.h, self.size)
-		[pygame.draw.line(self.surface, self.color, (z, self.y), (z, self.h), self.thickness) for z in self.x_positions]
-		[pygame.draw.line(self.surface, self.color, (self.x, z), (self.w, z), self.thickness) for z in self.y_positions]
+		self.cell_width = cell_width
+		self.cell_height = cell_height
+		self.rows = range(self.x, self.w, self.cell_width)
+		self.columns = range(self.y, self.h, self.cell_height)
+		[pygame.draw.line(self.surface, self.color, (z, self.y), (z, self.h), self.thickness) for z in self.rows]
+		[pygame.draw.line(self.surface, self.color, (self.x, z), (self.w, z), self.thickness) for z in self.columns]
 		
 	def draw(self, destination_surface=None):
 		if destination_surface is None:
@@ -878,9 +879,18 @@ class EwGrid(EwObject):
 		else:
 			destination_surface.blit(self.surface, (self.x, self.y), (0, 0, self.w, self.h))
 			
+	def get_rows(self):
+		return self.rows
+		
+	def get_columns(self):
+		return self.columns
+		
+	def get_cells(self):
+		return [(x, y) for x in self.rows for y in self.columns]
+			
 	def snap_to_grid(self, target):
-		target.x = self.x_positions[bisect.bisect_left(self.x_positions, target.x)-1]
-		target.y = self.y_positions[bisect.bisect_left(self.y_positions, target.y)-1]
+		target.x = self.x_positions[bisect.bisect_left(self.rows, target.x)-1]
+		target.y = self.y_positions[bisect.bisect_left(self.columns, target.y)-1]
 
 # Screen Management
 # ======================================================== #
