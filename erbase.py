@@ -88,13 +88,13 @@ class EwMovable(EwPos):
 	
 	def move(self, condition, direction=NORTH, step=1):
 		if condition:
-			if direction() == NORTH:
+			if direction == NORTH:
 				self["y"] -= step
-			if direction() == SOUTH:
+			if direction == SOUTH:
 				self["y"] += step
-			if direction() == WEST:
+			if direction == WEST:
 				self["x"] -= step
-			if direction() == EAST:
+			if direction == EAST:
 				self["x"] += step
 			return True
 	
