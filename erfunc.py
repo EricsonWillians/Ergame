@@ -30,6 +30,7 @@ TWITTER: https://twitter.com/poisonewein
 """
 
 import os
+import commands
 import ctypes
 import pygame
 from operator import mul
@@ -1657,19 +1658,28 @@ def erpath(path, filename):
 		raise ErgameError("The given input for path or filename is not a string.")
 
 def get_numlock_state():
-	dll = ctypes.WinDLL("User32.dll")
-	VK_NUMLOCK = 0x90
-	return dll.GetKeyState(VK_NUMLOCK)
+	if os.name == "nt":
+		dll = ctypes.WinDLL("User32.dll")
+		VK_NUMLOCK = 0x90
+		return dll.GetKeyState(VK_NUMLOCK)
+	elif os.name == "posix":
+		return int(commands.getoutput('xset q | grep LED')[65])
 
 def get_capslock_state():
-	dll = ctypes.WinDLL("User32.dll")
-	VK_CAPITAL = 0x14
-	return dll.GetKeyState(VK_CAPITAL)
+	if os.name == "nt":
+		dll = ctypes.WinDLL("User32.dll")
+		VK_CAPITAL = 0x14
+		return dll.GetKeyState(VK_CAPITAL)
+	elif os.name == "posix":
+		return int(commands.getoutput('xset q | grep LED')[65])
 	
 def get_scrolllock_state():
-	dll = ctypes.WinDLL("User32.dll")
-	VK_SCROLL = 0x91
-	return dll.GetKeyState(VK_SCROLL)
+	if os.name == "nt":
+		dll = ctypes.WinDLL("User32.dll")
+		VK_SCROLL = 0x91
+		return dll.GetKeyState(VK_SCROLL)
+	elif os.name == "posix":
+		return int(commands.getoutput('xset q | grep LED')[65])
 
 # Sequence Functions:
 # -------------------------------------------------------------------------------------------------------
