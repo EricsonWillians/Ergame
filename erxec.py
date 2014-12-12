@@ -1,7 +1,7 @@
 """
 ====================================================================
 
-ERGAME v1.01.
+ERGAME v1.01. 
 
 "erxec.py", Engine Execution.
 Copyright (C) <2014>  <Ericson Willians.>
