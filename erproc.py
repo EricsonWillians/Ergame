@@ -1,7 +1,7 @@
 """
 ====================================================================
 
-ERGAME v1.0
+ERGAME v1.01.
 
 "erproc.py", Procedural Generation.
 Copyright (C) <2014>  <Ericson Willians.>
