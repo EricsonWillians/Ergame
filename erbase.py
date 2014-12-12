@@ -1,7 +1,7 @@
 """
 ====================================================================
 
-ERGAME v1.0.
+ERGAME v1.01.
 
 "erbase.py", Base Engine File.
 Copyright (C) <2014>  <Ericson Willians.>
