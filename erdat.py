@@ -36,6 +36,11 @@ import os
 # CFG
 # ======================================================== #
 
+if os.name == "nt":
+	OS = "WINDOWS"
+elif os.name == "posix":
+	OS = "POSIX"
+
 GRAPHICS_PATH = "EWG"
 SOUNDS_PATH = "EWS"
 MUSIC_PATH = "EWM"

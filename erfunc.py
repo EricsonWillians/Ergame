@@ -1658,27 +1658,27 @@ def erpath(path, filename):
 		raise ErgameError("The given input for path or filename is not a string.")
 
 def get_numlock_state():
-	if os.name == "nt":
+	if OS == "WINDOWS":
 		dll = ctypes.WinDLL("User32.dll")
 		VK_NUMLOCK = 0x90
 		return dll.GetKeyState(VK_NUMLOCK)
-	elif os.name == "posix":
+	elif OS == "POSIX":
 		return int(commands.getoutput('xset q | grep LED')[65])
 
 def get_capslock_state():
-	if os.name == "nt":
+	if OS == "WINDOWS":
 		dll = ctypes.WinDLL("User32.dll")
 		VK_CAPITAL = 0x14
 		return dll.GetKeyState(VK_CAPITAL)
-	elif os.name == "posix":
+	elif OS == "POSIX":
 		return int(commands.getoutput('xset q | grep LED')[65])
 	
 def get_scrolllock_state():
-	if os.name == "nt":
+	if OS == "WINDOWS":
 		dll = ctypes.WinDLL("User32.dll")
 		VK_SCROLL = 0x91
 		return dll.GetKeyState(VK_SCROLL)
-	elif os.name == "posix":
+	elif OS == "POSIX":
 		return int(commands.getoutput('xset q | grep LED')[65])
 
 # Sequence Functions:

@@ -1,7 +1,7 @@
 """
 ====================================================================
 
-ERGAME v1.01. 
+ERGAME v1.0
 
 "erxec.py", Engine Execution.
 Copyright (C) <2014>  <Ericson Willians.>
@@ -123,6 +123,8 @@ class EwApp(EwRunnable, EwData):
 		self["FPS"] = FPS
 		self["FULLSCREEN"] = fullscreen
 		self["SOUND_BUFFER"] = sound_buffer
+		
+		print 'Running "%s" on %s in (%sx%s) at %s FPS with sound buffer of size %s.' % (self["TITLE"], OS, self["SCREEN_WIDTH"], self["SCREEN_HEIGHT"], self["FPS"], self["SOUND_BUFFER"])
 		
 		pygame.mixer.pre_init(44100, -16, 2, 1024) 
 		pygame.init()

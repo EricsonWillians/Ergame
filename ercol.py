@@ -1,7 +1,7 @@
 """
 ====================================================================
 
-ERGAME v1.01.
+ERGAME v1.0
 
 "ercol.py", Collision Detection.
 Copyright (C) <2014>  <Ericson Willians.>

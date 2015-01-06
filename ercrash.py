@@ -1,7 +1,7 @@
 """
 ====================================================================
 
-ERGAME v1.01.
+ERGAME v1.0
 
 "ercrash.py", Exceptions.
 Copyright (C) <2014>  <Ericson Willians.>
