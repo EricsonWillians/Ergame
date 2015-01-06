@@ -61,11 +61,11 @@ class EwRunnable:
 		self.scenes  = {}
 
 	def __call__(self, end_message=""):
-		if isinstance(end_message, basestring):
+		if isinstance(end_message, str):
 			if end_message != "":
-				print end_message
+				print(end_message)
 		else:
-			raise NotMemberOfError("basestring")
+			raise NotMemberOfError("str")
 		self.state = True
 		
 	def create(self, id_key, f, state=False):
@@ -84,7 +84,7 @@ class EwRunnable:
 			self.events = pygame.event.get();
 			for scene in self.scenes:
 				if self.scenes[scene][0] == True:
-					apply(self.scenes[scene][1])
+					self.scenes[scene][1]()
 			pygame.display.flip()
 			
 	def watch_for_exit(self):
@@ -123,8 +123,6 @@ class EwApp(EwRunnable, EwData):
 		self["FPS"] = FPS
 		self["FULLSCREEN"] = fullscreen
 		self["SOUND_BUFFER"] = sound_buffer
-		
-		print 'Running "%s" on %s in (%sx%s) at %s FPS with sound buffer of size %s.' % (self["TITLE"], OS, self["SCREEN_WIDTH"], self["SCREEN_HEIGHT"], self["FPS"], self["SOUND_BUFFER"])
 		
 		pygame.mixer.pre_init(44100, -16, 2, 1024) 
 		pygame.init()

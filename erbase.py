@@ -103,7 +103,7 @@ class EwMovable(EwPos):
 		if isinstance(step_pattern, list):
 			steps = step_pattern
 		else:
-			raise NotMemberOfError("basestring")
+			raise NotMemberOfError("str")
 		if movement_type == ARROWS:
 			self.move(key()[pygame.K_UP], NORTH, steps[0])
 			self.move(key()[pygame.K_DOWN], SOUTH, steps[1])
@@ -541,7 +541,7 @@ class EwFont(EwObject):
 		
 		self["size"] = size
 		self["filename"] = filename
-		if isinstance(text, basestring):
+		if isinstance(text, str):
 			pass
 		else:
 			text = str(text)
@@ -569,7 +569,7 @@ class EwFont(EwObject):
 		self.watch_for_focus()
 
 	def update(self, value):
-		if isinstance(value, basestring):
+		if isinstance(value, str):
 			pass
 		else:
 			value = str(value)
@@ -581,7 +581,7 @@ class EwFont(EwObject):
 		self["surface"] = self["font"].render(self["text"], 1, self["color"])
 	
 	def __call__(self, value):
-		if isinstance(value, basestring):
+		if isinstance(value, str):
 			pass
 		else:
 			value = str(value)
@@ -613,7 +613,7 @@ class EwTransformedFont(EwObject):
 		EwObject.__init__(self, x, y, w, h)
 		
 		self["filename"] = filename
-		if isinstance(text, basestring):
+		if isinstance(text, str):
 			pass
 		else:
 			text = str(text)
@@ -634,7 +634,7 @@ class EwTransformedFont(EwObject):
 		self.transform()
 		
 	def transform(self):
-		self["surface"] = pygame.transform.scale(self["surface"], (self["w"], self["h"]))
+		self["surface"] = pygame.transform.scale(self["surface"], (int(self["w"]), int(self["h"])))
 		
 	def draw(self, destination_surface=None):
 		if destination_surface is None:
@@ -644,7 +644,7 @@ class EwTransformedFont(EwObject):
 		self.watch_for_focus()
 
 	def update(self, value):
-		if isinstance(value, basestring):
+		if isinstance(value, str):
 			pass
 		else:
 			value = str(value)
@@ -658,7 +658,7 @@ class EwTransformedFont(EwObject):
 		self.transform()
 	
 	def __call__(self, value):
-		if isinstance(value, basestring):
+		if isinstance(value, str):
 			pass
 		else:
 			value = str(value)

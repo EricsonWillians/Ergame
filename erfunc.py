@@ -30,7 +30,8 @@ TWITTER: https://twitter.com/poisonewein
 """
 
 import os
-import commands
+if os.name == "posix":
+	import commands
 import ctypes
 import pygame
 from operator import mul
@@ -135,14 +136,14 @@ def push_char(k):
 	if EwData.app is not None:
 		for e in EwData.app.events:
 			if e.type == pygame.KEYDOWN:
-				if isinstance(k, basestring):
+				if isinstance(k, str):
 					if len(k) == 1:
 						if k == str(e.unicode):
 							return True
 					else:
 						raise UnknownPatternError('"char"')
 				else:
-					raise NotMemberOfError("basestring")
+					raise NotMemberOfError("str")
 
 def push_key(k):
 	"""ITERATION OVER EVENTS: Returns True WHEN the given pygame-key is pressed. """
@@ -172,7 +173,7 @@ def press_key(k):
 def print_keys():
 	for e in EwData.app.events:
 		if e.type == pygame.KEYDOWN:
-			print	str(e.key) +  " (" +pygame.key.name(e.key) + ")"
+			print(str(e.key) +  " (" +pygame.key.name(e.key) + ")")
 
 def release_key(k):
 	""" ITERATION OVER EVENTS: Returns True WHEN the given pygame-key is released. """
@@ -1651,34 +1652,34 @@ def check_file(string_path):
 		return False
 
 def erpath(path, filename):
-	if isinstance(path, basestring) and isinstance(filename, basestring):
+	if isinstance(path, str) and isinstance(filename, str):
 			full_path = os.path.join(path, filename)
 			return full_path
 	else:
 		raise ErgameError("The given input for path or filename is not a string.")
 
 def get_numlock_state():
-	if OS == "WINDOWS":
+	if os.name == "nt":
 		dll = ctypes.WinDLL("User32.dll")
 		VK_NUMLOCK = 0x90
 		return dll.GetKeyState(VK_NUMLOCK)
-	elif OS == "POSIX":
+	elif os.name == "posix":
 		return int(commands.getoutput('xset q | grep LED')[65])
 
 def get_capslock_state():
-	if OS == "WINDOWS":
+	if os.name == "nt":
 		dll = ctypes.WinDLL("User32.dll")
 		VK_CAPITAL = 0x14
 		return dll.GetKeyState(VK_CAPITAL)
-	elif OS == "POSIX":
+	elif os.name == "posix":
 		return int(commands.getoutput('xset q | grep LED')[65])
 	
 def get_scrolllock_state():
-	if OS == "WINDOWS":
+	if os.name == "nt":
 		dll = ctypes.WinDLL("User32.dll")
 		VK_SCROLL = 0x91
 		return dll.GetKeyState(VK_SCROLL)
-	elif OS == "POSIX":
+	elif os.name == "posix":
 		return int(commands.getoutput('xset q | grep LED')[65])
 
 # Sequence Functions:

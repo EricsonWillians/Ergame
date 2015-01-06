@@ -1,7 +1,7 @@
 """
 ====================================================================
 
-ERGAME's Graphical User Interface v1.01.
+ERGAME's Graphical User Interface v1.0.
 
 "ergui.py", Engine GUI.
 Copyright (C) <2014>  <Ericson Willians.>
@@ -33,9 +33,6 @@ import os
 from erdat import *
 from erfunc import *
 from erbase import *
-
-# Small observation for outsiders:
-# I use star-imports because the engine was written by ME and therefore I KNOW where everything is.
 
 """
 ERGUI is my humble Graphical User Interface.
@@ -309,11 +306,11 @@ class EwBarMenuItem(EwObject):
 		self["icon"] = None
 		
 	def add_label(self, text, filename=None):
-		if isinstance(text, basestring):
+		if isinstance(text, str):
 			self["label"] = text
 		else:
 			raise ErgameError("The given input is not a string.")
-		if isinstance(filename, basestring) or filename is None:
+		if isinstance(filename, str) or filename is None:
 			self["filename"] = filename
 		else:
 			raise ErgameError("The given input for filename is invalid (It's not None, nor string)")
@@ -677,7 +674,7 @@ class EwList(EwObject):
 				self["selected_items"]["booleans"][index_to_be_selected] = False
 				self["texts"][index_to_be_selected] = self["backup"][index_to_be_selected]
 			elif self["selected_items"]["booleans"][index_to_be_selected] == False:
-				self["selected_items"]["booleans"][index_to_be_selected] = True 
+				self["selected_items"]["booleans"][index_to_be_selected] = True	
 				self["texts"][index_to_be_selected] = "-> " + self["texts"][index_to_be_selected]
 		self["selection_rect"].draw(destination_surface)
 
@@ -703,7 +700,7 @@ class EwList(EwObject):
 			self.handle_scrolling()
 		except IndexError:
 			self["errors"] += 1
-			print "%s index errors found on: %r" % (self["errors"], self)
+			print("%s index errors found on: %r" % (self["errors"], self))
 		if enable_selection:
 			self.handle_selection(destination_surface)
 		[rect["font"].draw(destination_surface) for rect in self["items"]]
@@ -770,7 +767,7 @@ class EwBoolean(EwObject):
 	An EwBoolean is an EwObject that assembles EwRects into a graphical binary component.
 	"""
 	
-	def __init__(self, x, y, w, h, colors, alpha=SOLID, thickness=FILLED, pressed=False, outer_darkness=125, line_thickness=6):
+	def __init__(self, x, y, w, h, colors, alpha, thickness, pressed=False, outer_darkness=125, line_thickness=6):
 		
 		"""
 		Input arguments:
@@ -1037,7 +1034,7 @@ class EwRectButtonMenu(EwData):
 				if option is None:
 					return [b.press(mouse_button, None) for b in self["buttons"]]
 				else:
-					if isinstance(option, basestring):
+					if isinstance(option, str):
 						try:
 							return [b.press(mouse_button, None) for b in self["buttons"] if self["buttons"][self["buttons"].index(b)]["font"]["text"] == option][0]
 						except IndexError:
@@ -1147,7 +1144,7 @@ class EwSimpleTextMenu(EwData):
 	
 	def set_selected(self, value):
 		for b in self["buttons"]:
-			if isinstance(value, basestring):
+			if isinstance(value, str):
 				if b["font"]["text"] == value:
 					self["selection_model"]["booleans"][self["buttons"].index(b)] = True
 					self["selection_model"].force_single_selection(self["buttons"].index(b))
@@ -1155,17 +1152,17 @@ class EwSimpleTextMenu(EwData):
 				self["selection_model"]["booleans"][value] = True
 				self["selection_model"].force_single_selection(value)
 			else:
-				raise NotMemberOfError("basestring nor int")
+				raise NotMemberOfError("str nor int")
 				
 	def select_option(self, option, selection_delay=500, custom_key=pygame.K_RETURN):
 		for b in self["buttons"]:
 			if self["selection_model"]["booleans"][self["buttons"].index(b)]:
 				if release_key(custom_key):
-					if isinstance(option, basestring):
+					if isinstance(option, str):
 						if option == b["font"]["text"]:
 							return True
 					else:
-						raise NotMemberOfError("basestring")
+						raise NotMemberOfError("str")
 		self["selection_model"].select_with_arrows(selection_delay)
 		
 	def press(self, mouse_button=LMB1, option=None):
@@ -1174,7 +1171,7 @@ class EwSimpleTextMenu(EwData):
 				if option is None:
 					return [b.press(mouse_button, None, "font") for b in self["buttons"]]
 				else:
-					if isinstance(option, basestring):
+					if isinstance(option, str):
 						try:
 							return [b.press(mouse_button, None, "font") for b in self["buttons"] if self["buttons"][self["buttons"].index(b)]["font"]["text"] == option][0]
 						except IndexError:
@@ -1191,7 +1188,7 @@ class EwSimpleTextMenu(EwData):
 # The purpose of these simplifications is to reduce the number of arguments.
 # Thus making it easier to have a working menu without too much bureaucracy.
 
-class EwCentralizedSimpleTextMenu(EwData, EwSimpleTextMenu):
+class EwCentralizedSimpleTextMenu(EwSimpleTextMenu):
 	
 	"""
 	An EwCentralizedSimpleTextMenu is an EwSimpleTextMenu whose position is centered on the screen by default.
@@ -1209,11 +1206,10 @@ class EwCentralizedSimpleTextMenu(EwData, EwSimpleTextMenu):
 		strings <- list of strings
 		font_quality <- int
 		"""
-		
-		EwData.__init__(self)
+
 		EwSimpleTextMenu.__init__(self, ctx(w), cty(height_of_each_font*len(strings)), w, height_of_each_font, filename, color, alpha, strings, font_quality)
 		
-class EwSimplestMenu(EwData, EwSimpleTextMenu):
+class EwSimplestMenu(EwSimpleTextMenu):
 	
 	"""
 	An EwSimplestMenu is a simple centered menu that requires only two arguments to work.
@@ -1229,8 +1225,7 @@ class EwSimplestMenu(EwData, EwSimpleTextMenu):
 		color <- tuple <- (3 floats from 0 to 255)
 		alpha <- float from 0 to 255
 		"""
-		
-		EwData.__init__(self)
+
 		EwSimpleTextMenu.__init__(self, ctx(w), cty((w/4)*len(strings)), w, w/4, filename, color, alpha, strings)
 		
 class EwCarret(EwObject):
@@ -1496,7 +1491,7 @@ class EwInput(EwFont):
 						if e.key == pygame.K_SPACE:
 							self.update(self["text"] + " ")
 							self["carret"].move_forwards(EwFont(self["x"], self["y"], self["size"], self["filename"], " ", self["color"], self["alpha"], self["bold"])["w"])
-							self.generate_booleans()    
+							self.generate_booleans()	
 		else:
 			for e in EwData.app.events:
 				if e.type == pygame.KEYDOWN:
@@ -1517,7 +1512,7 @@ class EwInput(EwFont):
 						if e.key == pygame.K_SPACE:
 							self.update(self["text"] + " ")
 							self["carret"].move_forwards(EwFont(self["x"], self["y"], self["size"], self["filename"], " ", self["color"], self["alpha"], self["bold"])["w"])
-							self.generate_booleans()    
+							self.generate_booleans()	
 							
 		if press_backspace():
 			if self["text"] != self["label"]:
@@ -1586,9 +1581,9 @@ class EwValueChooser(EwObject):
 		self["bold"] = bold
 		self["font_quality"] = font_quality
 		self["rect"] = EwRect(self["x"], self["y"], self["w"], self["h"], self["color"], self["alpha"], self["thickness"])
-		self["value_positions"] = [self["rect"]["x"] + n for n in range(0, self["rect"]["w"], self["rect"]["w"]/len(self["values"]))]
-		self["inner_rects"] = [EwRect(pos, self["y"], self["w"]/len(self["values"]), self["h"], self["value_rect_color"], self["value_rect_alpha"], 6) for pos in self["value_positions"]]
-		self["value_rect"] = EwRect(self["x"], self["y"], self["w"]/len(self["values"]), self["h"], self["value_rect_color"], self["value_rect_alpha"], self["value_rect_thickness"])
+		self["value_positions"] = [self["rect"]["x"] + n for n in range(0, int(self["rect"]["w"]), int(self["rect"]["w"]//len(self["values"])))]
+		self["inner_rects"] = [EwRect(pos, self["y"], self["w"]//len(self["values"]), self["h"], self["value_rect_color"], self["value_rect_alpha"], 6) for pos in self["value_positions"]]
+		self["value_rect"] = EwRect(self["x"], self["y"], self["w"]//len(self["values"]), self["h"], self["value_rect_color"], self["value_rect_alpha"], self["value_rect_thickness"])
 		self["selection_model"] = EwSelectionModel(self["values"])
 		self["value"] = self["values"][0]
 		self["font"] = EwTransformedFont(self["x"], self["y"]-self["h"], self["w"], self["h"], self["font_filename"], self["value"], self["font_color"], self["font_alpha"], self["bold"], self["font_quality"])
@@ -1653,10 +1648,10 @@ class EwTextBox(EwObject):
 		self["rect_color"] = rect_color
 		self["rect_alpha"] = rect_alpha
 		self["rect_thickness"] = rect_thickness
-		if isinstance(text, basestring):
+		if isinstance(text, str):
 			self.update_text(text)
 		else:
-			raise NotMemberOfError("basestring")
+			raise NotMemberOfError("str")
 	
 	def update_text(self, text):
 		self["text"] = text
@@ -1672,50 +1667,3 @@ class EwTextBox(EwObject):
 	def draw(self, destination_surface=None):
 		self["rect_panel"].draw(destination_surface)
 		[f.draw(destination_surface) for f in self["fonts"]]
-
-class EwTerminal(EwInput):
-	
-	def __init__(self, layout, x, y, size, label="Input: ", filename=None, color=GREEN, alpha=255, bold=False):
-		
-		EwInput.__init__(self, layout, x, y, size, label, filename, color, alpha, bold)
-		self["commands"] = EwData()
-		self["command_log"] = []
-	
-	def create_command(self, function_id, function, *args):
-		self["commands"][function_id] = [function] + list(args)
-	
-	def enter_command(self):
-		def reset_input():
-			self.update(self["label"])
-			self["carret"]["rect"]["x"] = self["x"]+self["label_distance"]
-			
-		if push_enter():
-			command = self["text"].split(self["label"])[-1]
-			self["command_log"].append(command)
-			reset_input()
-			if command in self["commands"].data.keys():
-				apply(self["commands"][command][0], self["commands"][command][1:])
-			else:
-				print "Non-existent command."
-				
-	def get_last_command(self):
-		if len(self["command_log"]) > 0:
-			return lastel(self["command_log"])
-
-	def draw(self, destination_surface=None):
-		self.watch_for_focus()
-		if destination_surface is None:
-			EwData.app["screen"].blit(self["surface"], (self["x"], self["y"]))
-		else:
-			destination_surface.blit(self["surface"], (self["x"], self["y"]))
-		if self.focused():
-			self["carret"].draw(destination_surface)
-			self.update_message()
-		try:
-			self["selection_model"].select(press_right(), press_left(), INPUT_SELECTION_DELAY)
-		except (AttributeError, KeyError):
-			pass
-		self["carret"]["rect"]["x"] = self.get_carret_pos()
-		self.enter_command()
-		
-		
