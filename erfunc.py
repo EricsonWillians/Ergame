@@ -1361,20 +1361,7 @@ def us_colon():
 	""" Returns True WHILE one of the SHIFTS and the us semicolon keys are being pressed. """
 	if press_key(US_SEMICOLON) and press_shift():
 		return True
-		
-def us_apostrophe():
-	""" Returns True WHILE the us apostrophe key is being pressed. """
-	return press_key(US_APOSTROPHE)
-	
-def us_single_quote():
-	""" Returns True WHILE the us single_quote key is being pressed. """
-	return press_key(US_SINGLE_QUOTE)
-	
-def us_quotation_mark():
-	""" Returns True WHILE one of the SHIFTS and the us apostrophe keys are being pressed. """
-	if press_key(US_APOSTROPHE) and press_shift():
-		return True
-		
+
 def us_comma():
 	""" Returns True WHILE the us comma key is being pressed. """
 	return press_key(US_COMMA)
