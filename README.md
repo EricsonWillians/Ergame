@@ -9,4 +9,4 @@ Recent Updates
 
 * [EwConsole](https://github.com/EricsonWillians/Ergame/blob/master/ergui.py#L1540) was added to ergui.py.
 * Minor bugs related to the transition from Python 2.x to Python 3.x were fixed.
-* "press" and "push" acute input/key functions were added to erfunc.py.
+* ["press" and "push" acute input/key functions](https://github.com/EricsonWillians/Ergame/blob/master/erfunc.py#L645-L656) were added to erfunc.py.
