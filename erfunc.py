@@ -1,7 +1,7 @@
 """
 ====================================================================
 
-ERGAME v1.01.
+ERGAME v1.02
 
 "erfunc.py", Engine Static Functions.
 Copyright (C) <2014>  <Ericson Willians.>

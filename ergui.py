@@ -1,7 +1,7 @@
 """
 ====================================================================
 
-ERGAME's Graphical User Interface v1.0.
+ERGAME's Graphical User Interface v1.02
 
 "ergui.py", Engine GUI.
 Copyright (C) <2014>  <Ericson Willians.>
