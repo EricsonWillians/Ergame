@@ -15,10 +15,17 @@ if __name__ == "__main__":
 	r["Fullscreen"] = False
 	
 	app = EwApp("Ergame Map Editor (Ermap)", r["Screen Width"], r["Screen Height"], r["FPS"], r["Fullscreen"])
+	_in = EwConsole(32)
+	def x(arg0, arg1):
+		print("The values are: {0}, {1}".format(arg0, arg1))
+	_in.create_command("print", x)
 	
 	def exec_main():
 
 		app.fill_background(BLACK)
+		
+		_in.draw()
+		
 		app.watch_for_exit()
 		if press_escape():
 			app()

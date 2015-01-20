@@ -641,6 +641,19 @@ def push_comma():
 			if e.type == pygame.KEYDOWN:
 				if e.key == pygame.K_COMMA:
 					return True
+					
+def press_acute():
+	""" Returns True WHILE the acute key is being pressed. """
+	if pygame.key.get_pressed()[pygame.K_BACKQUOTE]:
+		return True
+		
+def push_acute():
+	"""ITERATION OVER EVENTS: Returns True WHEN acute is pressed. """
+	if EwData.app is not None:
+		for e in EwData.app.events:
+			if e.type == pygame.KEYDOWN:
+				if e.key == pygame.K_BACKQUOTE:
+					return True
 
 # Arrows
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

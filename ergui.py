@@ -1290,8 +1290,6 @@ class EwKeyboardLayout(EwData):
 			self[US_CLOSE_BRACKET + SPECIAL] = '}'
 			self[US_SEMICOLON] = ";"
 			self[US_SEMICOLON + SPECIAL] = ":"
-			self[US_APOSTROPHE] = "'"
-			self[US_APOSTROPHE + SPECIAL] = '"'
 			self[US_COMMA] = ','
 			self[US_COMMA + SPECIAL] = '<'
 			self[US_PERIOD] = '.'
@@ -1470,7 +1468,6 @@ class EwInput(EwFont):
 						special(US_OPEN_BRACKET)
 						special(US_CLOSE_BRACKET)
 						special(US_SEMICOLON)
-						special(US_APOSTROPHE)
 						special(US_COMMA)
 						special(US_PERIOD)
 						special(US_FORWARD_SLASH)
@@ -1539,7 +1536,50 @@ class EwInput(EwFont):
 		except (AttributeError, KeyError):
 			pass
 		self["carret"]["rect"]["x"] = self.get_carret_pos()
+
+class EwConsole(EwBar):
 	
+	def __init__(self, size, layout=EwKeyboardLayout(US_LAYOUT)):
+		
+		EwBar.__init__(self, size, NORTH, (0, 100, 0), 75)
+		self["input"] = EwInput(layout, self["x"] + size / 4.5, self["y"] + size / 4.5, size, "Input: ", None)
+		self["state"] = OFF
+		self["commands"] = {}
+	
+	def create_command(self, command_id, command_function):
+		self["commands"][command_id] = command_function
+		
+	def watch_for_commands(self):
+		if push_enter():
+			values = self["input"].get_value().split()
+			if values[0] in self["commands"]:
+				if len(values) == 1:
+					self["commands"][values[0]]()
+				elif len(values) > 1:
+					try:
+						self["commands"][values[0]](*values[1:])
+					except TypeError:
+						raise ErgameError("The given function '{0}' does not support the given arguments: {1}.".format(values[0], values[1:]))
+			else:
+				print("There is no such command: {}".format(values[0]))
+	
+	def draw(self, destination_surface=None):
+		if self["state"] is ON:
+			if destination_surface is None:
+				EwData.app["screen"].blit(self["surface"], (self["x"], self["y"]), (0, 0, self["w"], self["h"]))
+			else:
+				destination_surface.blit(self["surface"], (self["x"], self["y"]), (0, 0, self["w"], self["h"]))
+			self.watch_for_focus()
+			self["input"].draw(destination_surface)
+			self.watch_for_commands()
+		if push_acute():
+			if self["state"] is ON:
+				self["state"] = OFF
+				self["input"]["has_focus"] = False
+			elif self["state"] is OFF:
+				self["state"] = ON
+				self["input"]["has_focus"] = True
+
 class EwValueChooser(EwObject):
 	
 	"""
